@@ -21,8 +21,8 @@ set -x
 
 readonly TEST_NAMESPACE=client-tests
 readonly TEST_NAMESPACE_ALT=client-tests-alt
-readonly SERVING_RELEASE_BRANCH="release-v0.6.0"
-readonly SERVING_RELEASE_TAG="v0.6.0"
+readonly SERVING_RELEASE_BRANCH="release-v0.7.1"
+readonly SERVING_RELEASE_TAG="v0.7.1"
 readonly KN_DEFAULT_TEST_IMAGE="gcr.io/knative-samples/helloworld-go"
 readonly SERVING_NAMESPACE=knative-serving
 # TODO: Subscription.spec.sourceNamespace does not work on OCP v4.2. Need to revert after https://jira.coreos.com/browse/OLM-1190 is solved.
