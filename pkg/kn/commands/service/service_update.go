@@ -18,6 +18,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/knative/client/pkg/kn/commands/flags"
+	"github.com/knative/client/pkg/kn/traffic"
 	"github.com/spf13/cobra"
 	api_errors "k8s.io/apimachinery/pkg/api/errors"
 
@@ -27,7 +29,7 @@ import (
 func NewServiceUpdateCommand(p *commands.KnParams) *cobra.Command {
 	var editFlags ConfigurationEditFlags
 	var waitFlags commands.WaitFlags
-
+	var trafficFlags flags.Traffic
 	serviceUpdateCommand := &cobra.Command{
 		Use:   "update NAME [flags]",
 		Short: "Update a service.",
@@ -69,6 +71,15 @@ func NewServiceUpdateCommand(p *commands.KnParams) *cobra.Command {
 					return err
 				}
 
+				if trafficFlags.Changed(cmd) {
+					err, traffic := traffic.Compute(cmd, service, &trafficFlags)
+					if err != nil {
+						return err
+					}
+
+					service.Spec.Traffic = traffic
+				}
+
 				err = client.UpdateService(service)
 				if err != nil {
 					// Retry to update when a resource version conflict exists
@@ -99,6 +110,7 @@ func NewServiceUpdateCommand(p *commands.KnParams) *cobra.Command {
 	commands.AddNamespaceFlags(serviceUpdateCommand.Flags(), false)
 	editFlags.AddUpdateFlags(serviceUpdateCommand)
 	waitFlags.AddConditionWaitFlags(serviceUpdateCommand, 60, "Update", "service")
+	trafficFlags.Add(serviceUpdateCommand)
 	return serviceUpdateCommand
 }
 
