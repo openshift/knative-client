@@ -19,33 +19,23 @@ import (
 )
 
 type Traffic struct {
-	RevisionsPercentages     []string
-	RevisionsTags            []string
-	LatestRevisionPercentage int
-	LatestRevisionTag        string
-	UntagRevisions           []string
+	RevisionsPercentages []string
+	RevisionsTags        []string
+	UntagRevisions       []string
 }
 
 func (t *Traffic) Add(cmd *cobra.Command) {
 	cmd.Flags().StringSliceVar(&t.RevisionsPercentages,
 		"traffic",
 		nil,
-		"Set traffic percentage, format: --traffic revision=percent , example: --traffic echo-abcde=50) (can be specified multiple times)")
+		"Set traffic percentage, format: --traffic revision=percent , example: --traffic echo-abcde=50) (can be specified multiple times). "+
+			"Use identifier @latest to refer to latest ready revision, for e.g.: --traffic LATEST=100 (LATEST can be used only once with --traffic flag).")
 
 	cmd.Flags().StringSliceVar(&t.RevisionsTags,
 		"tag-revision",
 		nil,
-		"Tag revisions, format: --tag-revision revision=tag , example: --tag-revision echo-abcde=current (can be specified multiple times)")
-
-	cmd.Flags().IntVar(&t.LatestRevisionPercentage,
-		"traffic-latest",
-		0,
-		"Set traffic for latest ready revision, format: --traffic-latest percent , example: --traffic-latest 100")
-
-	cmd.Flags().StringVar(&t.LatestRevisionTag,
-		"tag-latest",
-		"",
-		"Tag latest ready revision, format: --tag-latest tag , example: --tag-latest current")
+		"Tag revisions, format: --tag-revision revision=tag , example: --tag-revision echo-abcde=current (can be specified multiple times). "+
+			"Use identifier @latest to refer to latest ready revision, for e.g.: --tag-revision LATEST=new (LATEST can be used only once with --tag-revision flag).")
 
 	cmd.Flags().StringSliceVar(&t.UntagRevisions,
 		"untag-revision",
@@ -54,21 +44,16 @@ func (t *Traffic) Add(cmd *cobra.Command) {
 }
 
 func (t *Traffic) PercentagesChanged(cmd *cobra.Command) bool {
-	switch {
-	case cmd.Flags().Changed("traffic"):
+	if cmd.Flags().Changed("traffic") {
 		return true
-	case cmd.Flags().Changed("traffic-latest"):
-		return true
-	default:
-		return false
 	}
+
+	return false
 }
 
 func (t *Traffic) TagsChanged(cmd *cobra.Command) bool {
 	switch {
 	case cmd.Flags().Changed("tag-revision"):
-		return true
-	case cmd.Flags().Changed("tag-latest"):
 		return true
 	case cmd.Flags().Changed("untag-revision"):
 		return true
