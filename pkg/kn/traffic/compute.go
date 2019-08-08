@@ -176,8 +176,8 @@ func verifyIfLatestRevisionRefRepeated(trafficFlags *flags.Traffic) error {
 		}
 
 		if latestRevisionTag && revision == latestRevisionRef {
-			return errors.New(fmt.Sprintf("Repetition of identifier %s for flag --tag "+
-				"is not allowed. Use only once with --tag flag.", latestRevisionRef))
+			return errors.New(fmt.Sprintf("repetition of identifier %s for flag --tag "+
+				"is not allowed. Use only once with --tag flag", latestRevisionRef))
 		}
 
 		if revision == latestRevisionRef {
@@ -193,8 +193,8 @@ func verifyIfLatestRevisionRefRepeated(trafficFlags *flags.Traffic) error {
 		}
 
 		if latestRevisionTraffic && revisionRef == latestRevisionRef {
-			return errors.New(fmt.Sprintf("Repetition of identifier %s for flag --traffic "+
-				"is not allowed. Use this only once with --tag flag.", latestRevisionRef))
+			return errors.New(fmt.Sprintf("repetition of identifier %s for flag --traffic "+
+				"is not allowed. Use this only once with --tag flag", latestRevisionRef))
 		}
 
 		if revisionRef == latestRevisionRef {
@@ -230,8 +230,8 @@ func Compute(cmd *cobra.Command, service *v1alpha1.Service, trafficFlags *flags.
 
 		// apply requested tag only if it doesnt exist in traffic block
 		if traffic.IsTagPresent(tag) {
-			return errors.New(fmt.Sprintf("Refusing to overwrite existing tag in service, "+
-				"add flag '--untag %s' in command to untag it.\n", tag)), nil
+			return errors.New(fmt.Sprintf("refusing to overwrite existing tag in service, "+
+				"add flag '--untag %s' in command to untag it\n", tag)), nil
 		}
 
 		// Second precedence: Tag latestRevision
