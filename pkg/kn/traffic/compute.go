@@ -163,7 +163,7 @@ func (e ServiceTraffic) RemoveNullTargets() (newTraffic ServiceTraffic) {
 	return newTraffic
 }
 
-// verifies if user has repeated 'LATEST' field in --tag-revision or --traffic flags
+// verifies if user has repeated 'LATEST' field in --tag or --traffic flags
 func verifyIfLatestRevisionRefRepeated(trafficFlags *flags.Traffic) error {
 	var latestRevisionTag = false
 	var latestRevisionTraffic = false
@@ -176,7 +176,7 @@ func verifyIfLatestRevisionRefRepeated(trafficFlags *flags.Traffic) error {
 		}
 
 		if latestRevisionTag && revision == latestRevisionRef {
-			return errors.New(fmt.Sprintf("Repetition of identifier %s for flag --tag-revision "+
+			return errors.New(fmt.Sprintf("Repetition of identifier %s for flag --tag "+
 				"is not allowed. Use only once with --tag flag.", latestRevisionRef))
 		}
 
@@ -231,7 +231,7 @@ func Compute(cmd *cobra.Command, service *v1alpha1.Service, trafficFlags *flags.
 		// apply requested tag only if it doesnt exist in traffic block
 		if traffic.IsTagPresent(tag) {
 			return errors.New(fmt.Sprintf("Refusing to overwrite existing tag in service, "+
-				"add flag '--untag-revision %s' in command to untag it.\n", tag)), nil
+				"add flag '--untag %s' in command to untag it.\n", tag)), nil
 		}
 
 		// Second precedence: Tag latestRevision

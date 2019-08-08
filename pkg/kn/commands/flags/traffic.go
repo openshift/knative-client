@@ -32,15 +32,15 @@ func (t *Traffic) Add(cmd *cobra.Command) {
 			"Use identifier @latest to refer to latest ready revision, for e.g.: --traffic LATEST=100 (LATEST can be used only once with --traffic flag).")
 
 	cmd.Flags().StringSliceVar(&t.RevisionsTags,
-		"tag-revision",
+		"tag",
 		nil,
-		"Tag revisions, format: --tag-revision revision=tag , example: --tag-revision echo-abcde=current (can be specified multiple times). "+
-			"Use identifier @latest to refer to latest ready revision, for e.g.: --tag-revision LATEST=new (LATEST can be used only once with --tag-revision flag).")
+		"Tag revisions, format: --tag revision=tag , example: --tag echo-abcde=current (can be specified multiple times). "+
+			"Use identifier @latest to refer to latest ready revision, for e.g.: --tag LATEST=new (LATEST can be used only once with --tag flag).")
 
 	cmd.Flags().StringSliceVar(&t.UntagRevisions,
-		"untag-revision",
+		"untag",
 		nil,
-		"Untag revision, format: --untag-revision tag , example: --untag-revision current")
+		"Untag revision, format: --untag tag , example: --untag current")
 }
 
 func (t *Traffic) PercentagesChanged(cmd *cobra.Command) bool {
@@ -53,9 +53,9 @@ func (t *Traffic) PercentagesChanged(cmd *cobra.Command) bool {
 
 func (t *Traffic) TagsChanged(cmd *cobra.Command) bool {
 	switch {
-	case cmd.Flags().Changed("tag-revision"):
+	case cmd.Flags().Changed("tag"):
 		return true
-	case cmd.Flags().Changed("untag-revision"):
+	case cmd.Flags().Changed("untag"):
 		return true
 	default:
 		return false
