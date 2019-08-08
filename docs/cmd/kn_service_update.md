@@ -41,8 +41,8 @@ kn service update NAME [flags]
   -p, --port int32               The port where application listens on.
       --requests-cpu string      The requested CPU (e.g., 250m).
       --requests-memory string   The requested memory (e.g., 64Mi).
-      --tag strings              Tag revisions, format: --tag revision=tag , example: --tag echo-abcde=current (can be specified multiple times). Use identifier @latest to refer to latest ready revision, for e.g.: --tag LATEST=new (LATEST can be used only once with --tag flag).
-      --traffic strings          Set traffic percentage, format: --traffic revision=percent , example: --traffic echo-abcde=50) (can be specified multiple times). Use identifier @latest to refer to latest ready revision, for e.g.: --traffic LATEST=100 (LATEST can be used only once with --traffic flag).
+      --tag strings              Tag revisions, format: --tag revision=tag , example: --tag echo-abcde=current (can be specified multiple times). Use identifier @latest to refer to latest ready revision, for e.g.: --tag @latest=new (@latest can be used only once with --tag flag).
+      --traffic strings          Set traffic percentage, format: --traffic revision=percent , example: --traffic echo-abcde=50) (can be specified multiple times). Use identifier @latest to refer to latest ready revision, for e.g.: --traffic @latest=100 (@latest can be used only once with --traffic flag).
       --untag strings            Untag revision, format: --untag tag , example: --untag current
       --wait-timeout int         Seconds to wait before giving up on waiting for service to be ready. (default 60)
 ```

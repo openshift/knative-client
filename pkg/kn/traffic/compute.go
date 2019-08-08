@@ -163,7 +163,7 @@ func (e ServiceTraffic) RemoveNullTargets() (newTraffic ServiceTraffic) {
 	return newTraffic
 }
 
-// verifies if user has repeated 'LATEST' field in --tag or --traffic flags
+// verifies if user has repeated @latest field in --tag or --traffic flags
 func verifyIfLatestRevisionRefRepeated(trafficFlags *flags.Traffic) error {
 	var latestRevisionTag = false
 	var latestRevisionTraffic = false
