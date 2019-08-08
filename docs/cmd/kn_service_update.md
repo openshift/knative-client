@@ -42,8 +42,8 @@ kn service update NAME [flags]
       --requests-cpu string      The requested CPU (e.g., 250m).
       --requests-memory string   The requested memory (e.g., 64Mi).
       --tag-latest string        Tag latest ready revision, format: --tag-latest tag , example: --tag-latest current
-      --tag-revision strings     Tag revisions, format: --tag-revision revision:tag , example: --tag-revision echo-abcde:current (can be specified multiple times)
-      --traffic strings          Set traffic percentage, format: --traffic revision:percent , example: --traffic echo-abcde:50) (can be specified multiple times)
+      --tag-revision strings     Tag revisions, format: --tag-revision revision=tag , example: --tag-revision echo-abcde=current (can be specified multiple times)
+      --traffic strings          Set traffic percentage, format: --traffic revision=percent , example: --traffic echo-abcde=50) (can be specified multiple times)
       --traffic-latest int       Set traffic for latest ready revision, format: --traffic-latest percent , example: --traffic-latest 100
       --untag-revision strings   Untag revision, format: --untag-revision tag , example: --untag-revision current
       --wait-timeout int         Seconds to wait before giving up on waiting for service to be ready. (default 60)

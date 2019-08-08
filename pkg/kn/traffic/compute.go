@@ -32,10 +32,10 @@ func newServiceTraffic(traffic []v1alpha1.TrafficTarget) ServiceTraffic {
 	return ServiceTraffic(traffic)
 }
 
-func splitByComma(pair string) (string, string, error) {
-	parts := strings.SplitN(pair, ":", 2)
+func splitByEqualSign(pair string) (string, string, error) {
+	parts := strings.SplitN(pair, "=", 2)
 	if len(parts) != 2 {
-		return "", "", errors.New(fmt.Sprintf("expecting the value format in value1:value2, given %s", pair))
+		return "", "", errors.New(fmt.Sprintf("expecting the value format in value1=value2, given %s", pair))
 	}
 	return parts[0], strings.TrimSuffix(parts[1], "%"), nil
 }
@@ -187,7 +187,7 @@ func Compute(cmd *cobra.Command, service *v1alpha1.Service, trafficFlags *flags.
 
 	// case 3: Tag Revisions
 	for _, each := range trafficFlags.RevisionsTags {
-		revision, tag, err := splitByComma(each)
+		revision, tag, err := splitByEqualSign(each)
 		if err != nil {
 			return err, nil
 		}
@@ -220,7 +220,7 @@ func Compute(cmd *cobra.Command, service *v1alpha1.Service, trafficFlags *flags.
 		for _, each := range trafficFlags.RevisionsPercentages {
 			// revisionRef works here as either revision or tag as either can be specified on CLI
 			// TODO: handle error
-			revisionRef, percent, err := splitByComma(each)
+			revisionRef, percent, err := splitByEqualSign(each)
 			if err != nil {
 				return err, nil
 			}

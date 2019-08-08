@@ -30,12 +30,12 @@ func (t *Traffic) Add(cmd *cobra.Command) {
 	cmd.Flags().StringSliceVar(&t.RevisionsPercentages,
 		"traffic",
 		nil,
-		"Set traffic percentage, format: --traffic revision:percent , example: --traffic echo-abcde:50) (can be specified multiple times)")
+		"Set traffic percentage, format: --traffic revision=percent , example: --traffic echo-abcde=50) (can be specified multiple times)")
 
 	cmd.Flags().StringSliceVar(&t.RevisionsTags,
 		"tag-revision",
 		nil,
-		"Tag revisions, format: --tag-revision revision:tag , example: --tag-revision echo-abcde:current (can be specified multiple times)")
+		"Tag revisions, format: --tag-revision revision=tag , example: --tag-revision echo-abcde=current (can be specified multiple times)")
 
 	cmd.Flags().IntVar(&t.LatestRevisionPercentage,
 		"traffic-latest",
