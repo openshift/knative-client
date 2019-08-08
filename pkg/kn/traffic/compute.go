@@ -55,6 +55,24 @@ func newTarget(tag, revision string, percent int, latestRevision bool) (target v
 	return
 }
 
+func (e ServiceTraffic) IsTagPresentOnRevision(tag, revision string) bool {
+	for _, target := range e {
+		if target.Tag == tag && target.RevisionName == revision {
+			return true
+		}
+	}
+	return false
+}
+
+func (e ServiceTraffic) IsTagPresentOnLatestRevision(tag string) bool {
+	for _, target := range e {
+		if target.Tag == tag && *target.LatestRevision {
+			return true
+		}
+	}
+	return false
+}
+
 func (e ServiceTraffic) IsTagPresent(tag string) bool {
 	for _, target := range e {
 		if target.Tag == tag {
@@ -228,19 +246,36 @@ func Compute(cmd *cobra.Command, service *v1alpha1.Service, trafficFlags *flags.
 			return err, nil
 		}
 
-		// apply requested tag only if it doesnt exist in traffic block
-		if traffic.IsTagPresent(tag) {
-			return errors.New(fmt.Sprintf("refusing to overwrite existing tag in service, "+
-				"add flag '--untag %s' in command to untag it\n", tag)), nil
-		}
-
 		// Second precedence: Tag latestRevision
 		if revision == latestRevisionRef {
+			// apply requested tag only if it doesnt exist in traffic block
+			if traffic.IsTagPresent(tag) {
+				// dont throw error if the tag present == requested tag
+				if traffic.IsTagPresentOnLatestRevision(tag) {
+					fmt.Println("same tag")
+					continue
+				}
+				// dont overwrite tags
+				return errors.New(fmt.Sprintf("refusing to overwrite existing tag for in service, "+
+					"add flag '--untag %s' in command to untag it", tag)), nil
+			}
+
 			traffic = traffic.TagLatestRevision(tag)
-		} else {
-			// Third precedence: Tag other revisions
-			traffic = traffic.TagRevision(tag, revision)
+			continue
 		}
+
+		// Third precedence: Tag other revisions
+		if traffic.IsTagPresent(tag) {
+			// dont throw error if the tag present == requested tag
+			if traffic.IsTagPresentOnRevision(tag, revision) {
+				continue
+			}
+
+			return errors.New(fmt.Sprintf("refusing to overwrite existing tag in service, "+
+				"add flag '--untag %s' in command to untag it", tag)), nil
+		}
+
+		traffic = traffic.TagRevision(tag, revision)
 	}
 
 	if cmd.Flags().Changed("traffic") {
@@ -271,7 +306,11 @@ func Compute(cmd *cobra.Command, service *v1alpha1.Service, trafficFlags *flags.
 			}
 
 			// fifth precendence: set traffic for rest of revisions
-			// check if given revisionRef is a tag
+			// If in a traffic block, revisionName of one target == tag of another,
+			// one having tag is assigned given percent, as tags are supposed to be unique
+			// and should be used (in this case) to avoid ambiguity
+
+			// first check if given revisionRef is a tag
 			if traffic.IsTagPresent(revisionRef) {
 				traffic.SetTrafficByTag(revisionRef, percentInt)
 				continue
