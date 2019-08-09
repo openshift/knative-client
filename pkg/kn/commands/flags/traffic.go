@@ -28,43 +28,29 @@ func (t *Traffic) Add(cmd *cobra.Command) {
 	cmd.Flags().StringSliceVar(&t.RevisionsPercentages,
 		"traffic",
 		nil,
-		"Set traffic percentage, format: --traffic revision=percent , example: --traffic echo-abcde=50) (can be specified multiple times). "+
-			"Use identifier @latest to refer to latest ready revision, for e.g.: --traffic @latest=100 (@latest can be used only once with --traffic flag).")
+		"Set traffic distribution (format: --traffic revisionRef=percent) where revisionRef can be a revision or a tag or '@latest' string "+
+			"representing latest ready revision. This flag can be given multiple times with percent summing up to 100%.")
 
 	cmd.Flags().StringSliceVar(&t.RevisionsTags,
 		"tag",
 		nil,
-		"Tag revisions, format: --tag revision=tag , example: --tag echo-abcde=current (can be specified multiple times). "+
-			"Use identifier @latest to refer to latest ready revision, for e.g.: --tag @latest=new (@latest can be used only once with --tag flag).")
+		"Set tag (format: --tag revisionRef=tag) where revisionRef can be a revision or '@latest' string representing latest ready revision. "+
+			"This flag can be specified multiple times.")
 
 	cmd.Flags().StringSliceVar(&t.UntagRevisions,
 		"untag",
 		nil,
-		"Untag revision, format: --untag tag , example: --untag current")
+		"Untag revision (format: --untag tag). This flag can be spcified multiple times.")
 }
 
 func (t *Traffic) PercentagesChanged(cmd *cobra.Command) bool {
-	if cmd.Flags().Changed("traffic") {
-		return true
-	}
-
-	return false
+	return cmd.Flags().Changed("traffic")
 }
 
 func (t *Traffic) TagsChanged(cmd *cobra.Command) bool {
-	switch {
-	case cmd.Flags().Changed("tag"):
-		return true
-	case cmd.Flags().Changed("untag"):
-		return true
-	default:
-		return false
-	}
+	return cmd.Flags().Changed("tag") || cmd.Flags().Changed("untag")
 }
 
 func (t *Traffic) Changed(cmd *cobra.Command) bool {
-	if t.PercentagesChanged(cmd) || t.TagsChanged(cmd) {
-		return true
-	}
-	return false
+	return t.PercentagesChanged(cmd) || t.TagsChanged(cmd)
 }
