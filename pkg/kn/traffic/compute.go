@@ -140,6 +140,7 @@ func (e ServiceTraffic) SetTrafficByRevision(revision string, percent int) {
 		if target.RevisionName == revision {
 			target.Percent = percent
 			e[i] = target
+			break
 		}
 	}
 }
