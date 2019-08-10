@@ -193,7 +193,10 @@ func errorRepeatingLatestRevision(forFlag string) error {
 }
 
 // verifies if user has repeated @latest field in --tag or --traffic flags
-func verifyIfLatestRevisionRefRepeated(trafficFlags *flags.Traffic) error {
+// verifyInputSanity checks:
+// - if user has repeated @latest field in --tag or --traffic flags
+// - if provided traffic portion are integers
+func verifyInputSanity(trafficFlags *flags.Traffic) error {
 	var latestRevisionTag = false
 	var latestRevisionTraffic = false
 
@@ -214,9 +217,14 @@ func verifyIfLatestRevisionRefRepeated(trafficFlags *flags.Traffic) error {
 	}
 
 	for _, each := range trafficFlags.RevisionsPercentages {
-		revisionRef, _, err := splitByEqualSign(each)
+		revisionRef, percent, err := splitByEqualSign(each)
 		if err != nil {
 			return err
+		}
+
+		_, err = strconv.Atoi(percent)
+		if err != nil {
+			return errors.New(fmt.Sprintf("error converting given %s to integer value for traffic distribution", percent))
 		}
 
 		if latestRevisionTraffic && revisionRef == latestRevisionRef {
@@ -226,13 +234,13 @@ func verifyIfLatestRevisionRefRepeated(trafficFlags *flags.Traffic) error {
 		if revisionRef == latestRevisionRef {
 			latestRevisionTraffic = true
 		}
+
 	}
 	return nil
 }
 
 func Compute(cmd *cobra.Command, targets []v1alpha1.TrafficTarget, trafficFlags *flags.Traffic) (error, []v1alpha1.TrafficTarget) {
-	// Verify if the input is sane
-	err := verifyIfLatestRevisionRefRepeated(trafficFlags)
+	err := verifyInputSanity(trafficFlags)
 	if err != nil {
 		return err, nil
 	}
@@ -245,7 +253,7 @@ func Compute(cmd *cobra.Command, targets []v1alpha1.TrafficTarget, trafficFlags 
 	}
 
 	for _, each := range trafficFlags.RevisionsTags {
-		revision, tag, _ := splitByEqualSign(each) // err is checked in verifyIfLatestRevisionRefRepeated
+		revision, tag, _ := splitByEqualSign(each) // err is checked in verifyInputSanity
 
 		// Second precedence: Tag latestRevision
 		if revision == latestRevisionRef {
@@ -284,11 +292,8 @@ func Compute(cmd *cobra.Command, targets []v1alpha1.TrafficTarget, trafficFlags 
 
 		for _, each := range trafficFlags.RevisionsPercentages {
 			// revisionRef works here as either revision or tag as either can be specified on CLI
-			revisionRef, percent, _ := splitByEqualSign(each) // err is checked in verifyIfLatestRevisionRefRepeated
-			percentInt, err := strconv.Atoi(percent)
-			if err != nil {
-				return errors.New(fmt.Sprintf("error converting given %s to integer value for traffic distribution", percent)), nil
-			}
+			revisionRef, percent, _ := splitByEqualSign(each) // err is verified in verifyInputSanity
+			percentInt, _ := strconv.Atoi(percent)            // percentInt (for int) is verified in verifyInputSanity
 
 			// fourth precendence: set traffic for latest revision
 			if revisionRef == latestRevisionRef {
