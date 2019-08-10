@@ -35,8 +35,8 @@ func newServiceTraffic(traffic []v1alpha1.TrafficTarget) ServiceTraffic {
 }
 
 func splitByEqualSign(pair string) (string, string, error) {
-	parts := strings.SplitN(pair, "=", 2)
-	if len(parts) != 2 {
+	parts := strings.Split(pair, "=")
+	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
 		return "", "", errors.New(fmt.Sprintf("expecting the value format in value1=value2, given %s", pair))
 	}
 	return parts[0], strings.TrimSuffix(parts[1], "%"), nil
