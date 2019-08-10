@@ -223,17 +223,13 @@ func verifyIfLatestRevisionRefRepeated(trafficFlags *flags.Traffic) error {
 	return nil
 }
 
-func trafficBlockOfService(service *v1alpha1.Service) []v1alpha1.TrafficTarget {
-	return service.Spec.Traffic
-}
-
-func Compute(cmd *cobra.Command, service *v1alpha1.Service, trafficFlags *flags.Traffic) (error, []v1alpha1.TrafficTarget) {
+func Compute(cmd *cobra.Command, targets []v1alpha1.TrafficTarget, trafficFlags *flags.Traffic) (error, []v1alpha1.TrafficTarget) {
 	// Verify if the input is sane
 	if err := verifyIfLatestRevisionRefRepeated(trafficFlags); err != nil {
 		return err, nil
 	}
 
-	traffic := newServiceTraffic(trafficBlockOfService(service))
+	traffic := newServiceTraffic(targets)
 
 	// First precedence: Untag revisions
 	for _, tag := range trafficFlags.UntagRevisions {

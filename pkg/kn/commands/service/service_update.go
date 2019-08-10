@@ -72,7 +72,7 @@ func NewServiceUpdateCommand(p *commands.KnParams) *cobra.Command {
 				}
 
 				if trafficFlags.Changed(cmd) {
-					err, traffic := traffic.Compute(cmd, service, &trafficFlags)
+					err, traffic := traffic.Compute(cmd, service.Spec.Traffic, &trafficFlags)
 					if err != nil {
 						return err
 					}
