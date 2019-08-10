@@ -182,6 +182,16 @@ func (e ServiceTraffic) RemoveNullTargets() (newTraffic ServiceTraffic) {
 	return newTraffic
 }
 
+func errorOverWritingTag(tag string) error {
+	return errors.New(fmt.Sprintf("refusing to overwrite existing tag in service, "+
+		"add flag '--untag %s' in command to untag it", tag))
+}
+
+func errorRepeatingLatestRevision(forFlag string) error {
+	return errors.New(fmt.Sprintf("repetition of identifier %s "+
+		"is not allowed, use only once with %s flag", latestRevisionRef, forFlag))
+}
+
 // verifies if user has repeated @latest field in --tag or --traffic flags
 func verifyIfLatestRevisionRefRepeated(trafficFlags *flags.Traffic) error {
 	var latestRevisionTag = false
@@ -189,14 +199,13 @@ func verifyIfLatestRevisionRefRepeated(trafficFlags *flags.Traffic) error {
 
 	for _, each := range trafficFlags.RevisionsTags {
 		revision, _, err := splitByEqualSign(each)
-
 		if err != nil {
 			return err
 		}
 
 		if latestRevisionTag && revision == latestRevisionRef {
-			return errors.New(fmt.Sprintf("repetition of identifier %s for flag --tag "+
-				"is not allowed. Use only once with --tag flag", latestRevisionRef))
+			return errorRepeatingLatestRevision("--tag")
+
 		}
 
 		if revision == latestRevisionRef {
@@ -206,14 +215,12 @@ func verifyIfLatestRevisionRefRepeated(trafficFlags *flags.Traffic) error {
 
 	for _, each := range trafficFlags.RevisionsPercentages {
 		revisionRef, _, err := splitByEqualSign(each)
-
 		if err != nil {
 			return err
 		}
 
 		if latestRevisionTraffic && revisionRef == latestRevisionRef {
-			return errors.New(fmt.Sprintf("repetition of identifier %s for flag --traffic "+
-				"is not allowed. Use this only once with --tag flag", latestRevisionRef))
+			return errorRepeatingLatestRevision("--traffic")
 		}
 
 		if revisionRef == latestRevisionRef {
@@ -225,7 +232,8 @@ func verifyIfLatestRevisionRefRepeated(trafficFlags *flags.Traffic) error {
 
 func Compute(cmd *cobra.Command, targets []v1alpha1.TrafficTarget, trafficFlags *flags.Traffic) (error, []v1alpha1.TrafficTarget) {
 	// Verify if the input is sane
-	if err := verifyIfLatestRevisionRefRepeated(trafficFlags); err != nil {
+	err := verifyIfLatestRevisionRefRepeated(trafficFlags)
+	if err != nil {
 		return err, nil
 	}
 
@@ -237,11 +245,7 @@ func Compute(cmd *cobra.Command, targets []v1alpha1.TrafficTarget, trafficFlags 
 	}
 
 	for _, each := range trafficFlags.RevisionsTags {
-		revision, tag, err := splitByEqualSign(each)
-
-		if err != nil {
-			return err, nil
-		}
+		revision, tag, _ := splitByEqualSign(each) // err is checked in verifyIfLatestRevisionRefRepeated
 
 		// Second precedence: Tag latestRevision
 		if revision == latestRevisionRef {
@@ -253,8 +257,8 @@ func Compute(cmd *cobra.Command, targets []v1alpha1.TrafficTarget, trafficFlags 
 					continue
 				}
 				// dont overwrite tags
-				return errors.New(fmt.Sprintf("refusing to overwrite existing tag for in service, "+
-					"add flag '--untag %s' in command to untag it", tag)), nil
+				return errorOverWritingTag(tag), nil
+
 			}
 
 			traffic = traffic.TagLatestRevision(tag)
@@ -268,8 +272,7 @@ func Compute(cmd *cobra.Command, targets []v1alpha1.TrafficTarget, trafficFlags 
 				continue
 			}
 
-			return errors.New(fmt.Sprintf("refusing to overwrite existing tag in service, "+
-				"add flag '--untag %s' in command to untag it", tag)), nil
+			return errorOverWritingTag(tag), nil
 		}
 
 		traffic = traffic.TagRevision(tag, revision)
@@ -281,14 +284,10 @@ func Compute(cmd *cobra.Command, targets []v1alpha1.TrafficTarget, trafficFlags 
 
 		for _, each := range trafficFlags.RevisionsPercentages {
 			// revisionRef works here as either revision or tag as either can be specified on CLI
-			revisionRef, percent, err := splitByEqualSign(each)
-			if err != nil {
-				return err, nil
-			}
-
+			revisionRef, percent, _ := splitByEqualSign(each) // err is checked in verifyIfLatestRevisionRefRepeated
 			percentInt, err := strconv.Atoi(percent)
 			if err != nil {
-				return err, nil
+				return errors.New(fmt.Sprintf("error converting given %s to integer value for traffic distribution", percent)), nil
 			}
 
 			// fourth precendence: set traffic for latest revision
