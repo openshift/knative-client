@@ -203,6 +203,12 @@ func TestComputeErrMsg(t *testing.T) {
 			[]string{"--traffic", "@latest=100p"},
 			"error converting given 100p to integer value for traffic distribution",
 		},
+		// error for traffic percent doesn't sum to 100
+		{
+			append(newServiceTraffic([]v1alpha1.TrafficTarget{}), newTarget("", "echo-v1", 100, false)),
+			[]string{"--traffic", "@latest=11", "echo-v1=79"},
+			"given traffic percents sum to 80, want 100",
+		},
 	} {
 		testCmd, tFlags := newTestTrafficCommand()
 		testCmd.SetArgs(testCase.inputFlags)

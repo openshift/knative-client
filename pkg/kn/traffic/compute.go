@@ -199,6 +199,7 @@ func errorRepeatingLatestRevision(forFlag string) error {
 func verifyInputSanity(trafficFlags *flags.Traffic) error {
 	var latestRevisionTag = false
 	var latestRevisionTraffic = false
+	var sum = 0
 
 	for _, each := range trafficFlags.RevisionsTags {
 		revision, _, err := splitByEqualSign(each)
@@ -222,7 +223,7 @@ func verifyInputSanity(trafficFlags *flags.Traffic) error {
 			return err
 		}
 
-		_, err = strconv.Atoi(percent)
+		percentInt, err := strconv.Atoi(percent)
 		if err != nil {
 			return errors.New(fmt.Sprintf("error converting given %s to integer value for traffic distribution", percent))
 		}
@@ -235,7 +236,14 @@ func verifyInputSanity(trafficFlags *flags.Traffic) error {
 			latestRevisionTraffic = true
 		}
 
+		sum += percentInt
 	}
+
+	// equivalent check for `cmd.Flags().Changed("traffic")` as we don't have `cmd` in this function
+	if len(trafficFlags.RevisionsPercentages) > 0 && sum != 100 {
+		return errors.New(fmt.Sprintf("given traffic percents sum to 80, want 100"))
+	}
+
 	return nil
 }
 
