@@ -85,8 +85,7 @@ func (e ServiceTraffic) IsTagPresent(tag string) bool {
 func (e ServiceTraffic) UntagRevision(tag string) {
 	for i, target := range e {
 		if target.Tag == tag {
-			target.Tag = ""
-			e[i] = target
+			e[i].Tag = ""
 			break
 		}
 	}
@@ -114,8 +113,7 @@ func (e ServiceTraffic) TagRevision(tag, revision string) ServiceTraffic {
 	for i, target := range e {
 		// add new tag in traffic block if referenced revision doesnt have one
 		if target.RevisionName == revision {
-			target.Tag = tag
-			e[i] = target
+			e[i].Tag = tag
 			return e
 		}
 	}
@@ -126,8 +124,7 @@ func (e ServiceTraffic) TagRevision(tag, revision string) ServiceTraffic {
 func (e ServiceTraffic) TagLatestRevision(tag string) ServiceTraffic {
 	for i, target := range e {
 		if *target.LatestRevision {
-			target.Tag = tag
-			e[i] = target
+			e[i].Tag = tag
 			return e
 		}
 	}
@@ -138,8 +135,7 @@ func (e ServiceTraffic) TagLatestRevision(tag string) ServiceTraffic {
 func (e ServiceTraffic) SetTrafficByRevision(revision string, percent int) {
 	for i, target := range e {
 		if target.RevisionName == revision {
-			target.Percent = percent
-			e[i] = target
+			e[i].Percent = percent
 			break
 		}
 	}
@@ -148,8 +144,7 @@ func (e ServiceTraffic) SetTrafficByRevision(revision string, percent int) {
 func (e ServiceTraffic) SetTrafficByTag(tag string, percent int) {
 	for i, target := range e {
 		if target.Tag == tag {
-			target.Percent = percent
-			e[i] = target
+			e[i].Percent = percent
 			break
 		}
 	}
@@ -158,17 +153,15 @@ func (e ServiceTraffic) SetTrafficByTag(tag string, percent int) {
 func (e ServiceTraffic) SetTrafficByLatestRevision(percent int) {
 	for i, target := range e {
 		if *target.LatestRevision {
-			target.Percent = percent
-			e[i] = target
+			e[i].Percent = percent
 			break
 		}
 	}
 }
 
 func (e ServiceTraffic) ResetAllTargetPercent() {
-	for i, target := range e {
-		target.Percent = 0
-		e[i] = target
+	for i := range e {
+		e[i].Percent = 0
 	}
 }
 
@@ -269,7 +262,6 @@ func Compute(cmd *cobra.Command, targets []v1alpha1.TrafficTarget, trafficFlags 
 			if traffic.IsTagPresent(tag) {
 				// dont throw error if the tag present == requested tag
 				if traffic.IsTagPresentOnLatestRevision(tag) {
-					fmt.Println("same tag")
 					continue
 				}
 				// dont overwrite tags
@@ -303,7 +295,7 @@ func Compute(cmd *cobra.Command, targets []v1alpha1.TrafficTarget, trafficFlags 
 			revisionRef, percent, _ := splitByEqualSign(each) // err is verified in verifyInputSanity
 			percentInt, _ := strconv.Atoi(percent)            // percentInt (for int) is verified in verifyInputSanity
 
-			// fourth precendence: set traffic for latest revision
+			// fourth precedence: set traffic for latest revision
 			if revisionRef == latestRevisionRef {
 				if traffic.IsLatestRevisionTrue() {
 					traffic.SetTrafficByLatestRevision(percentInt)
@@ -314,7 +306,7 @@ func Compute(cmd *cobra.Command, targets []v1alpha1.TrafficTarget, trafficFlags 
 				continue
 			}
 
-			// fifth precendence: set traffic for rest of revisions
+			// fifth precedence: set traffic for rest of revisions
 			// If in a traffic block, revisionName of one target == tag of another,
 			// one having tag is assigned given percent, as tags are supposed to be unique
 			// and should be used (in this case) to avoid ambiguity
