@@ -111,12 +111,17 @@ func (e ServiceTraffic) IsLatestRevisionTrue() bool {
 
 func (e ServiceTraffic) TagRevision(tag, revision string) ServiceTraffic {
 	for i, target := range e {
-		// add new tag in traffic block if referenced revision doesnt have one
 		if target.RevisionName == revision {
-			e[i].Tag = tag
-			return e
+			if target.Tag != "" { // referenced revision is requested to have multiple tags
+				break
+			} else {
+				e[i].Tag = tag // referenced revision doesn't have tag, tag it
+				return e
+			}
 		}
 	}
+	// append a new target if revision doesn't exist in traffic block
+	// or if referenced revision is requested to have multiple tags
 	e = append(e, newTarget(tag, revision, 0, false))
 	return e
 }
@@ -274,12 +279,13 @@ func Compute(cmd *cobra.Command, targets []v1alpha1.TrafficTarget, trafficFlags 
 		}
 
 		// Third precedence: Tag other revisions
-		if traffic.IsTagPresent(tag) {
-			// dont throw error if the tag present == requested tag
-			if traffic.IsTagPresentOnRevision(tag, revision) {
-				continue
-			}
+		// dont throw error if the tag present == requested tag
+		if traffic.IsTagPresentOnRevision(tag, revision) {
+			continue
+		}
 
+		// error if the tag is assigned to some other revision
+		if traffic.IsTagPresent(tag) {
 			return errorOverWritingTag(tag), nil
 		}
 

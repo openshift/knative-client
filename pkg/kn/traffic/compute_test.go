@@ -149,6 +149,23 @@ func TestCompute(t *testing.T) {
 			[]string{"old", "latest"},
 			[]int{50, 50},
 		},
+		{
+			"have multiple tags for a revision, revision present in traffic block",
+			append(newServiceTraffic([]v1alpha1.TrafficTarget{}), newTarget("latest", "echo-v1", 50, false), newTarget("", "echo-v2", 50, false)),
+			[]string{"--tag", "echo-v1=latest,echo-v1=current"},
+			[]string{"echo-v1", "echo-v2", "echo-v1"}, // appends a new target
+			[]string{"latest", "", "current"},         // with new tag requested
+			[]int{50, 50, 0},                          // and assign 0% to it
+		},
+
+		{
+			"have multiple tags for a revision, revision absent in traffic block",
+			append(newServiceTraffic([]v1alpha1.TrafficTarget{}), newTarget("", "echo-v2", 100, false)),
+			[]string{"--tag", "echo-v1=latest,echo-v1=current"},
+			[]string{"echo-v2", "echo-v1", "echo-v1"}, // appends two new targets
+			[]string{"", "latest", "current"},         // with new tags requested
+			[]int{100, 0, 0},                          // and assign 0% to each
+		},
 	} {
 		t.Run(testCase.name, func(t *testing.T) {
 			if lper, lrev, ltag := len(testCase.desiredPercents), len(testCase.desiredRevisions), len(testCase.desiredTags); lper != lrev || lper != ltag {
