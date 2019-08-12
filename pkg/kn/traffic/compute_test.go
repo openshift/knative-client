@@ -73,7 +73,7 @@ func TestCompute(t *testing.T) {
 			"re-assign same tag to same revision (unchanged)",
 			append(newServiceTraffic([]v1alpha1.TrafficTarget{}), newTarget("current", "", 100, true)),
 			[]string{"--tag", "@latest=current"},
-			[]string{"@latest"},
+			[]string{""},
 			[]string{"current"},
 			[]int{100},
 		},
@@ -96,9 +96,9 @@ func TestCompute(t *testing.T) {
 		{
 			"add 2 more tagged revisions without giving them traffic portions",
 			append(newServiceTraffic([]v1alpha1.TrafficTarget{}), newTarget("latest", "", 100, true)),
-			[]string{"--tag", "@latest=current,echo-v0=stale,echo-v1=old"},
+			[]string{"--tag", "echo-v0=stale,echo-v1=old"},
 			[]string{"@latest", "echo-v0", "echo-v1"},
-			[]string{"current", "stale", "old"},
+			[]string{"latest", "stale", "old"},
 			[]int{100, 0, 0},
 		},
 		{
@@ -166,6 +166,22 @@ func TestCompute(t *testing.T) {
 			[]string{"", "latest", "current"},         // with new tags requested
 			[]int{100, 0, 0},                          // and assign 0% to each
 		},
+		{
+			"re-assign same tag 'current' to @latest",
+			append(newServiceTraffic([]v1alpha1.TrafficTarget{}), newTarget("current", "", 100, true)),
+			[]string{"--tag", "@latest=current"},
+			[]string{""},
+			[]string{"current"}, // since no change, no error
+			[]int{100},
+		},
+		{
+			"assign echo-v1 10% traffic adjusting rest to @latest, echo-v1 isn't present in existing traffic block",
+			append(newServiceTraffic([]v1alpha1.TrafficTarget{}), newTarget("", "", 100, true)),
+			[]string{"--traffic", "echo-v1=10,@latest=90"},
+			[]string{"", "echo-v1"},
+			[]string{"", ""}, // since no change, no error
+			[]int{90, 10},
+		},
 	} {
 		t.Run(testCase.name, func(t *testing.T) {
 			if lper, lrev, ltag := len(testCase.desiredPercents), len(testCase.desiredRevisions), len(testCase.desiredTags); lper != lrev || lper != ltag {
@@ -220,22 +236,34 @@ func TestComputeErrMsg(t *testing.T) {
 			"repetition of identifier @latest is not allowed, use only once with --tag flag",
 		},
 		{
-			"overwriting tag to @latest revision not allowed",
+			"overwriting tag not allowed, to @latest from other revision",
 			append(append(newServiceTraffic([]v1alpha1.TrafficTarget{}), newTarget("latest", "", 2, true)), newTarget("stable", "echo-v2", 98, false)),
 			[]string{"--tag", "@latest=stable"},
 			"refusing to overwrite existing tag in service, add flag '--untag stable' in command to untag it",
 		},
 		{
-			"overwriting tags of others revisions not allowed",
+			"overwriting tag not allowed, to a revision from other revision",
 			append(append(newServiceTraffic([]v1alpha1.TrafficTarget{}), newTarget("latest", "", 2, true)), newTarget("stable", "echo-v2", 98, false)),
 			[]string{"--tag", "echo-v2=latest"},
 			"refusing to overwrite existing tag in service, add flag '--untag latest' in command to untag it",
+		},
+		{
+			"overwriting tag of @latest not allowed, existing != requested",
+			append(newServiceTraffic([]v1alpha1.TrafficTarget{}), newTarget("candidate", "", 100, true)),
+			[]string{"--tag", "@latest=current"},
+			"tag 'candidate' exists on latest ready revision of service, refusing to overwrite existing tag with 'current', add flag '--untag candidate' in command to untag it",
 		},
 		{
 			"verify error for non integer values given to percent",
 			append(newServiceTraffic([]v1alpha1.TrafficTarget{}), newTarget("", "", 100, true)),
 			[]string{"--traffic", "@latest=100p"},
 			"error converting given 100p to integer value for traffic distribution",
+		},
+		{
+			"verify error for traffic sum not equal to 100",
+			append(newServiceTraffic([]v1alpha1.TrafficTarget{}), newTarget("", "", 100, true)),
+			[]string{"--traffic", "@latest=19,echo-v1=71"},
+			"given traffic percents sum to 90, want 100",
 		},
 	} {
 		t.Run(testCase.name, func(t *testing.T) {

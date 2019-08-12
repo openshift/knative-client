@@ -64,13 +64,13 @@ func (e ServiceTraffic) IsTagPresentOnRevision(tag, revision string) bool {
 	return false
 }
 
-func (e ServiceTraffic) IsTagPresentOnLatestRevision(tag string) bool {
+func (e ServiceTraffic) TagOfLatestRevision() string {
 	for _, target := range e {
-		if target.Tag == tag && *target.LatestRevision {
-			return true
+		if *target.LatestRevision {
+			return target.Tag
 		}
 	}
-	return false
+	return ""
 }
 
 func (e ServiceTraffic) IsTagPresent(tag string) bool {
@@ -180,6 +180,11 @@ func (e ServiceTraffic) RemoveNullTargets() (newTraffic ServiceTraffic) {
 	return newTraffic
 }
 
+func errorOverWritingTagOfLatestRevision(existingTag, requestedTag string) error {
+	return errors.New(fmt.Sprintf("tag '%s' exists on latest ready revision of service, "+
+		"refusing to overwrite existing tag with '%s', "+
+		"add flag '--untag %s' in command to untag it", existingTag, requestedTag, existingTag))
+}
 func errorOverWritingTag(tag string) error {
 	return errors.New(fmt.Sprintf("refusing to overwrite existing tag in service, "+
 		"add flag '--untag %s' in command to untag it", tag))
@@ -239,7 +244,7 @@ func verifyInputSanity(trafficFlags *flags.Traffic) error {
 
 	// equivalent check for `cmd.Flags().Changed("traffic")` as we don't have `cmd` in this function
 	if len(trafficFlags.RevisionsPercentages) > 0 && sum != 100 {
-		return errors.New(fmt.Sprintf("given traffic percents sum to 80, want 100"))
+		return errors.New(fmt.Sprintf("given traffic percents sum to %d, want 100", sum))
 	}
 
 	return nil
@@ -263,19 +268,25 @@ func Compute(cmd *cobra.Command, targets []v1alpha1.TrafficTarget, trafficFlags 
 
 		// Second precedence: Tag latestRevision
 		if revision == latestRevisionRef {
-			// apply requested tag only if it doesnt exist in traffic block
-			if traffic.IsTagPresent(tag) {
-				// dont throw error if the tag present == requested tag
-				if traffic.IsTagPresentOnLatestRevision(tag) {
-					continue
-				}
-				// dont overwrite tags
-				return errorOverWritingTag(tag), nil
+			existingTagOnLatestRevision := traffic.TagOfLatestRevision()
 
+			// just pass if existing == requested
+			if existingTagOnLatestRevision == tag {
+				continue
 			}
 
-			traffic = traffic.TagLatestRevision(tag)
-			continue
+			// apply requested tag only if it doesnt exist in traffic block
+			if traffic.IsTagPresent(tag) {
+				return errorOverWritingTag(tag), nil
+			}
+
+			if existingTagOnLatestRevision == "" {
+				traffic = traffic.TagLatestRevision(tag)
+				continue
+			} else {
+				return errorOverWritingTagOfLatestRevision(existingTagOnLatestRevision, tag), nil
+			}
+
 		}
 
 		// Third precedence: Tag other revisions
