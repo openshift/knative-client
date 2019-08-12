@@ -267,7 +267,7 @@ func Compute(cmd *cobra.Command, targets []v1alpha1.TrafficTarget, trafficFlags 
 	traffic := newServiceTraffic(targets)
 
 	// First precedence: Untag revisions
-	for _, tag := range trafficFlags.untagRevisions {
+	for _, tag := range trafficFlags.UntagRevisions {
 		traffic.untagRevision(tag)
 	}
 
@@ -305,7 +305,7 @@ func Compute(cmd *cobra.Command, targets []v1alpha1.TrafficTarget, trafficFlags 
 
 		// error if the tag is assigned to some other revision
 		if traffic.isTagPresent(tag) {
-			return errorOverWritingTag(tag), nil
+			return nil, errorOverWritingTag(tag)
 		}
 
 		traffic = traffic.TagRevision(tag, revision)
@@ -358,5 +358,5 @@ func Compute(cmd *cobra.Command, targets []v1alpha1.TrafficTarget, trafficFlags 
 		}
 	}
 	// remove any targets having no tags and 0% traffic portion
-	return nil, traffic.RemoveNullTargets()
+	return traffic.RemoveNullTargets(), nil
 }

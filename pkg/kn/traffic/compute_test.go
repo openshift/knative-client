@@ -192,7 +192,7 @@ func TestCompute(t *testing.T) {
 			testCmd, tFlags := newTestTrafficCommand()
 			testCmd.SetArgs(testCase.inputFlags)
 			testCmd.Execute()
-			err, targets := Compute(testCmd, testCase.existingTraffic, tFlags)
+			targets, err := Compute(testCmd, testCase.existingTraffic, tFlags)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -270,7 +270,7 @@ func TestComputeErrMsg(t *testing.T) {
 			testCmd, tFlags := newTestTrafficCommand()
 			testCmd.SetArgs(testCase.inputFlags)
 			testCmd.Execute()
-			err, _ := Compute(testCmd, testCase.existingTraffic, tFlags)
+			_, err := Compute(testCmd, testCase.existingTraffic, tFlags)
 			assert.Error(t, err, testCase.errMsg)
 		})
 	}
