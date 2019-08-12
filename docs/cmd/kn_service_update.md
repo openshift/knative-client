@@ -14,14 +14,25 @@ kn service update NAME [flags]
 
 ```
 
-  # Updates a service 'mysvc' with new environment variables
-  kn service update mysvc --env KEY1=VALUE1 --env KEY2=VALUE2
+  # Updates a service 'svc' with new environment variables
+  kn service update svc --env KEY1=VALUE1 --env KEY2=VALUE2
 
-  # Update a service 'mysvc' with new port
-  kn service update mysvc --port 80
+  # Update a service 'svc' with new port
+  kn service update svc --port 80
 
-  # Updates a service 'mysvc' with new requests and limits parameters
-  kn service update mysvc --requests-cpu 500m --limits-memory 1024Mi
+  # Updates a service 'svc' with new requests and limits parameters
+  kn service update svc --requests-cpu 500m --limits-memory 1024Mi
+
+  # Assign tag 'latest' and 'stable' to revisions 'echo-v2' and 'echo-v1' respectively
+  kn service update svc --tag echo-v2=latest --tag echo-v1=stable
+  OR
+  kn service update svc --tag echo-v2=latest,echo-v1=stable
+
+  # Update tag from 'testing' to 'staging' for latest ready revision of service
+  kn service update svc --untag testing --tag @latest=staging
+
+  # Add tag 'test' to echo-v3 revision with 10% traffic and rest to latest ready revision of service
+  kn service update svc --tag echo-v3=test --traffic test=10,@latest=90
 ```
 
 ### Options

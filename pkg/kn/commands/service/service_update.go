@@ -43,16 +43,16 @@ func NewServiceUpdateCommand(p *commands.KnParams) *cobra.Command {
   # Updates a service 'svc' with new requests and limits parameters
   kn service update svc --requests-cpu 500m --limits-memory 1024Mi
 
-	# Assign tag 'latest' and 'stable' to revisions 'echo-v2' and 'echo-v1' respectively
-	kn service update svc --tag echo-v2=latest --tag echo-v1=stable
-	OR
-	kn service update svc --tag echo-v2=latest,echo-v1=stable
+  # Assign tag 'latest' and 'stable' to revisions 'echo-v2' and 'echo-v1' respectively
+  kn service update svc --tag echo-v2=latest --tag echo-v1=stable
+  OR
+  kn service update svc --tag echo-v2=latest,echo-v1=stable
 
-	# Update tag from 'testing' to 'staging' for latest ready revision of service
-	kn service update svc --untag testing --tag @latest=staging
+  # Update tag from 'testing' to 'staging' for latest ready revision of service
+  kn service update svc --untag testing --tag @latest=staging
 
-	# Add tag 'test' to echo-v3 revision with 10% traffic and rest to latest ready revision of service
-	kn service update svc --tag echo-v3=test --traffic test=10,@latest=90`,
+  # Add tag 'test' to echo-v3 revision with 10% traffic and rest to latest ready revision of service
+  kn service update svc --tag echo-v3=test --traffic test=10,@latest=90`,
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			if len(args) != 1 {
 				return errors.New("requires the service name.")
