@@ -59,6 +59,7 @@ initialize $@
 
 header "Running tests for Knative serving $KNATIVE_VERSION"
 
-go_test_e2e ./test/e2e || fail_test
-
+# go_test_e2e ./test/e2e || fail_test
+# TODO: Remove following line and update invoking go_test_e2e function as https://github.com/knative/test-infra/issues/1259 resolves
+go test -timeout 30m -v -race -count=1 -tags=e2e ./test/e2e || fail_test
 success
