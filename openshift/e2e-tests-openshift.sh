@@ -181,30 +181,11 @@ function build_knative_client() {
 }
 
 function run_e2e_tests(){
-  header "Running tests"
+  header "Running e2e tests"
   failed=0
-
-  # adding the basic workflow tests for now
-  # TODO: Link the integration tests written in go here once the PR is merged upstream
-
-  ./kn service create svc1 --async --image $KN_DEFAULT_TEST_IMAGE -e TARGET=Knative || fail_test
-  ./kn service create hello --wait-timeout 120 --image $KN_DEFAULT_TEST_IMAGE -e TARGET=Knative || fail_test
-  ./kn service list hello || fail_test
-  ./kn service update hello --env TARGET=kn || fail_test
-  ./kn revision list hello || fail_test
-  ./kn service list || fail_test
-  ./kn service create hello --wait-timeout 120 --force --image $KN_DEFAULT_TEST_IMAGE -e TARGET=Awesome || fail_test
-  ./kn service create foo --wait-timeout 120 --force --image $KN_DEFAULT_TEST_IMAGE -e TARGET=foo || fail_test
-  ./kn revision list || fail_test
-  ./kn service list || fail_test
-  ./kn service describe hello || fail_test
-  ./kn service describe svc1 || fail_test
-  ./kn route list || fail_test
-  ./kn service delete hello || fail_test
-  ./kn service delete foo || fail_test
-  ./kn service list | grep -q svc1 || fail_test
-  ./kn service delete svc1 || fail_test
-
+  # Add local dir to have access to built kn
+  export PATH=$PATH:${REPO_ROOT_DIR}
+  go_test_e2e ./test/e2e || fail_test
   return $failed
 }
 
