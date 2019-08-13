@@ -223,7 +223,8 @@ func TestTrafficSplit(t *testing.T) {
 			tflags = []string{"--untag", "testing", "--tag", fmt.Sprintf("%s=staging", rev1)}
 			test.serviceUpdateWithOptions(t, serviceName, tflags)
 
-			expectedTargets := []TargetFields{newTargetFields("staging", rev1, 0, false)}
+			expectedTargets := []TargetFields{newTargetFields("", rev2, 100, true),
+				newTargetFields("staging", rev1, 0, false)}
 			test.verifyTargets(t, serviceName, expectedTargets)
 			test.serviceDelete(t, serviceName)
 		},
