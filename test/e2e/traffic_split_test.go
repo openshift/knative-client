@@ -324,16 +324,18 @@ func TestTrafficSplit(t *testing.T) {
 			test.serviceUpdateWithOptions(t, serviceName, []string{"--env", "TARGET=v2"})
 			rev2 := test.latestRevisionOfService(t, serviceName)
 
-			// existing state: two revision exists with traffic share and latest revision has tag current
-			tflags := []string{"--tag", fmt.Sprintf("@latest=latest,%s=candidate", rev1),
-				"--traffic", fmt.Sprintf("latest=10,candidate=90")}
+			// existing state: two revision exists with traffic share and
+			// each revision has tag and traffic portions
+			tflags := []string{"--tag", fmt.Sprintf("@latest=current,%s=candidate", rev1),
+				"--traffic", "current=90,candidate=10"}
 			test.serviceUpdateWithOptions(t, serviceName, tflags)
 
-			// desired state: update tag for rev1 as testing with 100% traffic
-			tflags = []string{"--traffic", "testing=100%", "--tag", fmt.Sprintf("%s=testing", rev1), "--untag", "candidate"}
+			// desired state: update tag for rev1 as testing (from candidate) with 100% traffic
+			tflags = []string{"--untag", "candidate", "--tag", fmt.Sprintf("%s=testing", rev1),
+				"--traffic", "testing=100"}
 			test.serviceUpdateWithOptions(t, serviceName, tflags)
 
-			expectedTargets := []TargetFields{newTargetFields("latest", rev2, 0, true),
+			expectedTargets := []TargetFields{newTargetFields("current", rev2, 0, true),
 				newTargetFields("testing", rev1, 100, false)}
 			test.verifyTargets(t, serviceName, expectedTargets)
 			test.serviceDelete(t, serviceName)
