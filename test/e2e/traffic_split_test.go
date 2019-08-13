@@ -185,7 +185,7 @@ func TestTrafficSplit(t *testing.T) {
 			test.serviceDelete(t, serviceName)
 		},
 	)
-	t.Run("update tag for a revision from testing to staging for @latest revision",
+	t.Run("update tag from testing to staging for @latest revision",
 		func(t *testing.T) {
 			serviceName = serviceBase + strconv.Itoa(tCase)
 			tCase++
@@ -205,7 +205,7 @@ func TestTrafficSplit(t *testing.T) {
 			test.serviceDelete(t, serviceName)
 		},
 	)
-	t.Run("update tag for a revision from testing to staging for a revision",
+	t.Run("update tag from testing to staging for a revision (non @latest)",
 		func(t *testing.T) {
 			serviceName = serviceBase + strconv.Itoa(tCase)
 			tCase++
@@ -220,11 +220,10 @@ func TestTrafficSplit(t *testing.T) {
 			test.serviceUpdateWithOptions(t, serviceName, tflags)
 
 			// desired state: change tag from testing to staging
-			tflags = []string{"--untag", "testing", "--tag", "@latest=staging"}
+			tflags = []string{"--untag", "testing", "--tag", fmt.Sprintf("%s=staging", rev1)}
 			test.serviceUpdateWithOptions(t, serviceName, tflags)
 
-			// target of rev1 gets removed from traffic block as it had no traffic and its untagged (null target)
-			expectedTargets := []TargetFields{newTargetFields("staging", rev2, 100, true)}
+			expectedTargets := []TargetFields{newTargetFields("staging", rev1, 0, false)}
 			test.verifyTargets(t, serviceName, expectedTargets)
 			test.serviceDelete(t, serviceName)
 		},
