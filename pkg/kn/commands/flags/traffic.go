@@ -34,13 +34,13 @@ func (t *Traffic) Add(cmd *cobra.Command) {
 	cmd.Flags().StringSliceVar(&t.RevisionsTags,
 		"tag",
 		nil,
-		"Set tag (format: --tag revisionRef=tag) where revisionRef can be a revision or '@latest' string representing latest ready revision. "+
+		"Set tag (format: --tag revisionRef=tagName) where revisionRef can be a revision or '@latest' string representing latest ready revision. "+
 			"This flag can be specified multiple times.")
 
 	cmd.Flags().StringSliceVar(&t.UntagRevisions,
 		"untag",
 		nil,
-		"Untag revision (format: --untag tag). This flag can be spcified multiple times.")
+		"Untag revision (format: --untag tagName). This flag can be spcified multiple times.")
 }
 
 func (t *Traffic) PercentagesChanged(cmd *cobra.Command) bool {

@@ -52,9 +52,9 @@ kn service update NAME [flags]
   -p, --port int32               The port where application listens on.
       --requests-cpu string      The requested CPU (e.g., 250m).
       --requests-memory string   The requested memory (e.g., 64Mi).
-      --tag strings              Set tag (format: --tag revisionRef=tag) where revisionRef can be a revision or '@latest' string representing latest ready revision. This flag can be specified multiple times.
+      --tag strings              Set tag (format: --tag revisionRef=tagName) where revisionRef can be a revision or '@latest' string representing latest ready revision. This flag can be specified multiple times.
       --traffic strings          Set traffic distribution (format: --traffic revisionRef=percent) where revisionRef can be a revision or a tag or '@latest' string representing latest ready revision. This flag can be given multiple times with percent summing up to 100%.
-      --untag strings            Untag revision (format: --untag tag). This flag can be spcified multiple times.
+      --untag strings            Untag revision (format: --untag tagName). This flag can be spcified multiple times.
       --wait-timeout int         Seconds to wait before giving up on waiting for service to be ready. (default 60)
 ```
 
