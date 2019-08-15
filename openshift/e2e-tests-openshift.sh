@@ -185,6 +185,9 @@ function run_e2e_tests(){
   failed=0
   # Add local dir to have access to built kn
   export PATH=$PATH:${REPO_ROOT_DIR}
+  export GO111MODULE=on
+  ls -l /usr/local/go/src/github.com/knative/client/pkg/util
+  ls -l /go/src/github.com/knative/client/pkg/util
   go_test_e2e ./test/e2e || fail_test
   return $failed
 }
