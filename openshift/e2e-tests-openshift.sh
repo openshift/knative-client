@@ -191,7 +191,7 @@ function run_e2e_tests(){
   # Add local dir to have access to built kn
   export PATH=$PATH:${REPO_ROOT_DIR}
   export GO111MODULE=on
-  go_test_e2e -timeout=30m ./test/e2e || fail_test
+  go_test_e2e -timeout=30m -parallel=1 ./test/e2e || fail_test
   return $failed
 }
 
