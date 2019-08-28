@@ -25,9 +25,14 @@ readonly SERVING_RELEASE_BRANCH="release-v0.7.1"
 readonly SERVING_RELEASE_TAG="v0.7.1"
 readonly KN_DEFAULT_TEST_IMAGE="gcr.io/knative-samples/helloworld-go"
 readonly SERVING_NAMESPACE=knative-serving
-# TODO: Subscription.spec.sourceNamespace does not work on OCP v4.2. Need to revert after https://jira.coreos.com/browse/OLM-1190 is solved.
-readonly OLM_NAMESPACE="knative-serving"
-#readonly OLM_NAMESPACE="openshift-operator-lifecycle-manager"
+
+# The OLM global namespace was moved to openshift-marketplace since v4.2
+# ref: https://jira.coreos.com/browse/OLM-1190
+if [ ${HOSTNAME} = "e2e-aws-ocp-41" ]; then
+  readonly OLM_NAMESPACE="openshift-operator-lifecycle-manager"
+else
+  readonly OLM_NAMESPACE="openshift-marketplace"
+fi
 
 env
 
