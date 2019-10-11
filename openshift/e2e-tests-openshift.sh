@@ -21,7 +21,7 @@ set -x
 
 readonly TEST_NAMESPACE=client-tests
 readonly TEST_NAMESPACE_ALT=client-tests-alt
-readonly SERVING_RELEASE_BRANCH="release-v0.7.1"
+readonly SERVING_RELEASE="release-v0.8.1"
 readonly KN_DEFAULT_TEST_IMAGE="gcr.io/knative-samples/helloworld-go"
 readonly SERVING_NAMESPACE=knative-serving
 readonly SERVICEMESH_NAMESPACE=istio-system
@@ -136,7 +136,7 @@ function install_servicemesh(){
   header "Installing ServiceMesh"
 
   # Install the ServiceMesh Operator
-  oc apply -f https://raw.githubusercontent.com/openshift/knative-serving/release-v0.8.1/openshift/servicemesh/operator-install.yaml
+  oc apply -f https://raw.githubusercontent.com/openshift/knative-serving/$SERVING_RELEASE/openshift/servicemesh/operator-install.yaml
 
   # Wait for the istio-operator pod to appear
   timeout 900 '[[ $(oc get pods -n openshift-operators | grep -c istio-operator) -eq 0 ]]' || return 1
@@ -146,7 +146,7 @@ function install_servicemesh(){
 
   # Deploy ServiceMesh
   oc new-project $SERVICEMESH_NAMESPACE
-  oc apply -n $SERVICEMESH_NAMESPACE -f https://raw.githubusercontent.com/openshift/knative-serving/release-v0.8.1/openshift/servicemesh/controlplane-install.yaml
+  oc apply -n $SERVICEMESH_NAMESPACE -f https://raw.githubusercontent.com/openshift/knative-serving/$SERVING_RELEASE/openshift/servicemesh/controlplane-install.yaml
   cat <<EOF | oc apply -f -
 apiVersion: maistra.io/v1
 kind: ServiceMeshMemberRoll
@@ -177,7 +177,7 @@ function install_knative_serving(){
   oc new-project $SERVING_NAMESPACE
 
   # Install CatalogSource in OLM namespace
-  oc apply -n $OLM_NAMESPACE -f https://raw.githubusercontent.com/openshift/knative-serving/release-v0.8.1/openshift/olm/knative-serving.catalogsource.yaml
+  oc apply -n $OLM_NAMESPACE -f https://raw.githubusercontent.com/openshift/knative-serving/$SERVING_RELEASE/openshift/olm/knative-serving.catalogsource.yaml
   timeout 900 '[[ $(oc get pods -n $OLM_NAMESPACE | grep -c serverless) -eq 0 ]]' || ret
   wait_until_pods_running $OLM_NAMESPACE
 
@@ -299,7 +299,7 @@ function wait_until_pods_running() {
 
 function delete_knative_openshift() {
   echo ">> Bringing down Knative Serving"
-  oc delete --ignore-not-found=true -n $OLM_NAMESPACE -f https://raw.githubusercontent.com/openshift/knative-serving/release-v0.8.1/openshift/olm/knative-serving.catalogsource.yaml
+  oc delete --ignore-not-found=true -n $OLM_NAMESPACE -f https://raw.githubusercontent.com/openshift/knative-serving/$SERVING_RELEASE/openshift/olm/knative-serving.catalogsource.yaml
 
   oc delete --ignore-not-found=true project $SERVING_NAMESPACE
 }
