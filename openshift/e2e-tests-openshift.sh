@@ -25,14 +25,7 @@ readonly SERVING_RELEASE="release-v0.8.1"
 readonly KN_DEFAULT_TEST_IMAGE="gcr.io/knative-samples/helloworld-go"
 readonly SERVING_NAMESPACE=knative-serving
 readonly SERVICEMESH_NAMESPACE=istio-system
-
-# The OLM global namespace was moved to openshift-marketplace since v4.2
-# ref: https://jira.coreos.com/browse/OLM-1190
-if [ ${HOSTNAME} = "e2e-aws-ocp-41" ]; then
-  readonly OLM_NAMESPACE="openshift-operator-lifecycle-manager"
-else
-  readonly OLM_NAMESPACE="openshift-marketplace"
-fi
+readonly OLM_NAMESPACE="openshift-marketplace"
 
 env
 
