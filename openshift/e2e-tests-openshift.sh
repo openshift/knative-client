@@ -170,7 +170,10 @@ function install_knative_serving(){
   oc new-project $SERVING_NAMESPACE
 
   # Install CatalogSource in OLM namespace
-  oc apply -n $OLM_NAMESPACE -f https://raw.githubusercontent.com/openshift-knative/serverless-operator/master/olm-catalog/serverless-operator/serverless-operator.v1.1.0.clusterserviceversion.yaml
+  curl -L "https://raw.githubusercontent.com/openshift-knative/serverless-operator/master/olm-catalog/serverless-operator/serverless-operator.v1.1.0.clusterserviceversion.yaml" \
+    | sed -s "s/placeholder/${OLM_NAMESPACE}/" \
+    | oc apply -n $OLM_NAMESPACE -f -
+
   timeout 900 '[[ $(oc get pods -n $OLM_NAMESPACE | grep -c serverless) -eq 0 ]]' || ret
   wait_until_pods_running $OLM_NAMESPACE
 
@@ -218,7 +221,7 @@ metadata:
   namespace: ${SERVING_NAMESPACE}
 spec:
   source: ${NAME}
-  sourceNamespace: $OLM_NAMESPACE
+  sourceNamespace: ${OLM_NAMESPACE}
   name: ${NAME}
   channel: techpreview
 EOF
@@ -292,7 +295,10 @@ function wait_until_pods_running() {
 
 function delete_knative_openshift() {
   echo ">> Bringing down Knative Serving"
-  oc delete --ignore-not-found=true -n $OLM_NAMESPACE -f https://raw.githubusercontent.com/openshift-knative/serverless-operator/master/olm-catalog/serverless-operator/serverless-operator.v1.1.0.clusterserviceversion.yaml
+
+  curl -L "https://raw.githubusercontent.com/openshift-knative/serverless-operator/master/olm-catalog/serverless-operator/serverless-operator.v1.1.0.clusterserviceversion.yaml" \
+    | sed -s "s/placeholder/${OLM_NAMESPACE}/" \
+    | oc delete --ignore-not-found=true -n $OLM_NAMESPACE -f -
 
   oc delete --ignore-not-found=true project $SERVING_NAMESPACE
 }
