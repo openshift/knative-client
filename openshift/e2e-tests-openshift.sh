@@ -19,13 +19,14 @@ source $(dirname $0)/../vendor/knative.dev/test-infra/scripts/e2e-tests.sh
 
 set -x
 
-readonly TEST_NAMESPACE=client-tests
-readonly TEST_NAMESPACE_ALT=client-tests-alt
+readonly TEST_NAMESPACE="client-tests"
+readonly TEST_NAMESPACE_ALT="client-tests-alt"
 readonly SERVING_RELEASE="release-v0.8.1"
 readonly KN_DEFAULT_TEST_IMAGE="gcr.io/knative-samples/helloworld-go"
-readonly SERVING_NAMESPACE=knative-serving
-readonly SERVICEMESH_NAMESPACE=istio-system
-readonly OLM_NAMESPACE="openshift-marketplace"
+readonly SERVING_NAMESPACE="knative-serving"
+readonly SERVICEMESH_NAMESPACE="istio-system"
+readonly E2E_TIMEOUT="60m"
+readonly E2E_PARALLEL="1"
 
 env
 
@@ -227,7 +228,7 @@ function run_e2e_tests(){
   # Add local dir to have access to built kn
   export PATH=$PATH:${REPO_ROOT_DIR}
   export GO111MODULE=on
-  go_test_e2e -timeout=30m -parallel=1 ./test/e2e || fail_test
+  go_test_e2e -timeout=$E2E_TIMEOUT -parallel=$E2E_PARALLEL ./test/e2e || fail_test
   return $failed
 }
 
