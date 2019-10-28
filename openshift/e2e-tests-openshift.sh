@@ -127,17 +127,18 @@ function timeout() {
 }
 
 function install_servicemesh(){
-  header "Installing ServiceMesh"
+  # header "Installing ServiceMesh"
 
   # Install the ServiceMesh Operator
-  oc apply -f https://raw.githubusercontent.com/openshift/knative-serving/$SERVING_RELEASE/openshift/servicemesh/operator-install.yaml
+  # oc apply -f https://raw.githubusercontent.com/openshift/knative-serving/$SERVING_RELEASE/openshift/servicemesh/operator-install.yaml
 
   # Wait for the istio-operator pod to appear
-  timeout 900 '[[ $(oc get pods -n openshift-operators | grep -c istio-operator) -eq 0 ]]' || return 1
+  # timeout 900 '[[ $(oc get pods -n openshift-operators | grep -c istio-operator) -eq 0 ]]' || return 1
 
   # Wait until the Operator pod is up and running
   wait_until_pods_running openshift-operators || return 1
 
+  header "Creating ServiceMeshMemberRoll"
   # Deploy ServiceMesh
   oc new-project $SERVICEMESH_NAMESPACE
   oc apply -n $SERVICEMESH_NAMESPACE -f https://raw.githubusercontent.com/openshift/knative-serving/$SERVING_RELEASE/openshift/servicemesh/controlplane-install.yaml
@@ -305,9 +306,9 @@ failed=0
 
 (( !failed )) && build_knative_client || failed=1
 
-#(( !failed )) && install_servicemesh || failed=1
-
 (( !failed )) && install_knative_serving || failed=1
+
+(( !failed )) && install_servicemesh || failed=1
 
 (( !failed )) && run_e2e_tests || failed=1
 
