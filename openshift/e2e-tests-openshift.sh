@@ -194,7 +194,7 @@ EOF
 }
 
 function deploy_serverless_operator(){
-  oc apply -f openshift/serverless/operator-install.yaml
+  oc apply -f openshift/serverless/serverless-operator-1.2.0.yaml -n openshift-operators
 }
 
 function enable_knative_interaction_with_registry() {
@@ -305,7 +305,7 @@ failed=0
 
 (( !failed )) && build_knative_client || failed=1
 
-(( !failed )) && install_servicemesh || failed=1
+#(( !failed )) && install_servicemesh || failed=1
 
 (( !failed )) && install_knative_serving || failed=1
 
