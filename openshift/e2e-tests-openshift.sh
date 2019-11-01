@@ -19,8 +19,6 @@ source $(dirname $0)/../vendor/knative.dev/test-infra/scripts/e2e-tests.sh
 
 set -x
 
-readonly TEST_NAMESPACE="client-tests"
-readonly TEST_NAMESPACE_ALT="client-tests-alt"
 readonly SERVING_RELEASE="release-v0.8.1"
 readonly KN_DEFAULT_TEST_IMAGE="gcr.io/knative-samples/helloworld-go"
 readonly SERVING_NAMESPACE="knative-serving"
@@ -150,8 +148,12 @@ metadata:
 spec:
   members:
   - ${SERVING_NAMESPACE}
-  - ${TEST_NAMESPACE}
-  - ${TEST_NAMESPACE_ALT}
+  - kne2etests0
+  - kne2etests1
+  - kne2etests2
+  - kne2etests3
+  - kne2etests4
+  - kne2etests5
 EOF
 
   # Wait for the ingressgateway pod to appear.
@@ -209,13 +211,6 @@ function enable_knative_interaction_with_registry() {
   oc -n $SERVING_NAMESPACE set env deployment/controller SSL_CERT_FILE=$mount_path/$cert_name
 }
 
-function create_test_namespace(){
-  oc new-project $TEST_NAMESPACE
-  oc new-project $TEST_NAMESPACE_ALT
-  oc adm policy add-scc-to-user privileged -z default -n $TEST_NAMESPACE
-  oc adm policy add-scc-to-user privileged -z default -n $TEST_NAMESPACE_ALT
-}
-
 function build_knative_client() {
   failed=0
   ./hack/build.sh -f || failed=1
@@ -271,8 +266,7 @@ function delete_knative_openshift() {
 
 function delete_test_namespace(){
   echo ">> Deleting test namespaces"
-  oc delete project $TEST_NAMESPACE
-  oc delete project $TEST_NAMESPACE_ALT
+  oc delete project --ignore-not-found=true kne2etests0 kne2etests1 kne2etests2 kne2etests3 kne2etests4 kne2etests5
 }
 
 function delete_service_mesh(){
@@ -298,8 +292,6 @@ echo ">> - cpu.cfs_quota_us"
 cat /sys/fs/cgroup/cpu/cpu.cfs_quota_us
 
 scale_up_workers || exit 1
-
-create_test_namespace || exit 1
 
 failed=0
 
