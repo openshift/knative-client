@@ -1,0 +1,17 @@
+aliases:
+  knative-client-approvers:
+  - alanfx
+  - bbrowning
+  - markusthoemmes
+  - vdemeester
+  - matzew
+  - rhuss
+  - navidshaikh
+  knative-client-reviewers:
+  - alanfx
+  - bbrowning
+  - markusthoemmes
+  - vdemeester
+  - matzew
+  - rhuss
+  - navidshaikh
