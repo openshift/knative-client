@@ -25,7 +25,8 @@ readonly SERVING_NAMESPACE="knative-serving"
 readonly SERVICEMESH_NAMESPACE="istio-system"
 readonly E2E_TIMEOUT="60m"
 readonly E2E_PARALLEL="1"
-
+readonly CS_NS="openshift-marketplace"
+readonly OPERATOR_NS="openshift-operators"
 env
 
 function scale_up_workers(){
@@ -196,7 +197,21 @@ EOF
 }
 
 function deploy_serverless_operator(){
-  oc apply -f openshift/serverless/operator-install.yaml
+  git clone https://github.com/openshift-knative/serverless-operator.git /tmp/serverless-operator
+  /tmp/serverless-operator/hack/catalog.sh | oc apply -n $CS_NS -f -
+  cat <<-EOF | kubectl apply -f -
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: serverless-operator-sub
+  generateName: serverless-operator-
+  namespace: $OPERATOR_NS
+spec:
+  source: serverless-operator
+  sourceNamespace: $CS_NS
+  name: serverless-operator
+  channel: techpreview
+EOF
 }
 
 function enable_knative_interaction_with_registry() {
