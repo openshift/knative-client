@@ -80,15 +80,16 @@ run() {
     exit 0
   fi
 
+  # Cross compile only
+  if $(has_flag --all -x); then
+    cross_build || (echo "✋ Cross platform build failed" && exit 1)
+    exit 0
+  fi
+
   # Default flow
   codegen
   go_build
   go_test
-
-  # Cross compile in addition if requested
-  if $(has_flag --all -x); then
-    cross_build || (echo "✋ Cross platform build failed" && exit 1)
-  fi
 
   echo "────────────────────────────────────────────"
   ./kn version
