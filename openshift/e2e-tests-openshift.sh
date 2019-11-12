@@ -143,8 +143,12 @@ EOF
 
 function build_knative_client() {
   failed=0
+
   # run this cross platform build to ensure all the checks pass (as this is done while building artifacts)
   ./hack/build.sh -x || failed=1
+
+  ls -l ${REPO_ROOT_DIR}
+  ls -l $GOPATH/pkg/mod/
 
   if [[ $failed -eq 0 ]]; then
     mv kn-linux-amd64 kn
@@ -158,8 +162,9 @@ function run_e2e_tests(){
   failed=0
   # Add local dir to have access to built kn
   export PATH=$PATH:${REPO_ROOT_DIR}
-  export GO111MODULE=on
-  go_test_e2e -timeout=$E2E_TIMEOUT -parallel=$E2E_PARALLEL ./test/e2e || fail_test
+  ls -l ${REPO_ROOT_DIR}
+  ls -l $GOPATH/pkg/mod/
+  GO111MODULE=on go_test_e2e -timeout=$E2E_TIMEOUT -parallel=$E2E_PARALLEL -mod=vendor ./test/e2e || fail_test
   return $failed
 }
 
