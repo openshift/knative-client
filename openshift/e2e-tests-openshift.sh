@@ -19,14 +19,12 @@ source $(dirname $0)/../vendor/knative.dev/test-infra/scripts/e2e-tests.sh
 
 set -x
 
-readonly SERVING_RELEASE="release-v0.8.1"
 readonly KN_DEFAULT_TEST_IMAGE="gcr.io/knative-samples/helloworld-go"
 readonly SERVING_NAMESPACE="knative-serving"
-readonly SERVICEMESH_NAMESPACE="istio-system"
+readonly SERVICEMESH_NAMESPACE="knative-serving-ingress"
 readonly E2E_TIMEOUT="60m"
 readonly E2E_PARALLEL="1"
-readonly CS_NS="openshift-marketplace"
-readonly OPERATOR_NS="openshift-operators"
+readonly OLM_NAMESPACE="openshift-marketplace"
 env
 
 function scale_up_workers(){
@@ -78,43 +76,6 @@ function wait_until_hostname_resolves() {
   return 1
 }
 
-# Waits until the given hostname resolves via DNS
-# Parameters: $1 - hostname
-function wait_until_hostname_resolves() {
-  echo -n "Waiting until hostname $1 resolves via DNS"
-  for i in {1..150}; do  # timeout after 15 minutes
-    local output="$(host -t a $1 | grep 'has address')"
-    if [[ -n "${output}" ]]; then
-      echo -e "\n${output}"
-      return 0
-    fi
-    echo -n "."
-    sleep 6
-  done
-  echo -e "\n\nERROR: timeout waiting for hostname $1 to resolve via DNS"
-  return 1
-}
-
-# Waits until the configmap in the given namespace contains the
-# desired content.
-# Parameters: $1 - namespace
-#             $2 - configmap name
-#             $3 - desired content
-function wait_until_configmap_contains() {
-  echo -n "Waiting until configmap $1/$2 contains '$3'"
-  for _ in {1..180}; do  # timeout after 3 minutes
-    local output="$(oc -n "$1" get cm "$2" -oyaml | grep "$3")"
-    if [[ -n "${output}" ]]; then
-      echo -e "\n${output}"
-      return 0
-    fi
-    echo -n "."
-    sleep 1
-  done
-  echo -e "\n\nERROR: timeout waiting for configmap $1/$2 to contain '$3'"
-  return 1
-}
-
 # Loops until duration (car) is exceeded or command (cdr) returns non-zero
 function timeout() {
   SECONDS=0; TIMEOUT=$1; shift
@@ -125,49 +86,6 @@ function timeout() {
   return 0
 }
 
-function install_servicemesh(){
-  header "Installing ServiceMesh"
-
-  # Install the ServiceMesh Operator
-  oc apply -f https://raw.githubusercontent.com/openshift/knative-serving/$SERVING_RELEASE/openshift/servicemesh/operator-install.yaml
-
-  # Wait for the istio-operator pod to appear
-  timeout 900 '[[ $(oc get pods -n openshift-operators | grep -c istio-operator) -eq 0 ]]' || return 1
-
-  # Wait until the Operator pod is up and running
-  wait_until_pods_running openshift-operators || return 1
-
-  # Deploy ServiceMesh
-  oc new-project $SERVICEMESH_NAMESPACE
-  oc apply -n $SERVICEMESH_NAMESPACE -f https://raw.githubusercontent.com/openshift/knative-serving/$SERVING_RELEASE/openshift/servicemesh/controlplane-install.yaml
-  cat <<EOF | oc apply -f -
-apiVersion: maistra.io/v1
-kind: ServiceMeshMemberRoll
-metadata:
-  name: default
-  namespace: ${SERVICEMESH_NAMESPACE}
-spec:
-  members:
-  - ${SERVING_NAMESPACE}
-  - kne2etests0
-  - kne2etests1
-  - kne2etests2
-  - kne2etests3
-  - kne2etests4
-  - kne2etests5
-EOF
-
-  # Wait for the ingressgateway pod to appear.
-  timeout 900 '[[ $(oc get pods -n $SERVICEMESH_NAMESPACE | grep -c istio-ingressgateway) -eq 0 ]]' || return 1
-
-  wait_until_service_has_external_ip $SERVICEMESH_NAMESPACE istio-ingressgateway || fail_test "Ingress has no external IP"
-  wait_until_hostname_resolves "$(kubectl get svc -n $SERVICEMESH_NAMESPACE istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')"
-
-  wait_until_pods_running $SERVICEMESH_NAMESPACE
-
-  header "ServiceMesh installed successfully"
-}
-
 function install_knative_serving(){
   header "Installing Knative serving"
 
@@ -175,9 +93,6 @@ function install_knative_serving(){
 
   # Deploy Serverless Operator
   deploy_serverless_operator
-
-  # Wait for the CRD to appear
-  timeout 900 '[[ $(oc get crd | grep -c knativeservings) -eq 0 ]]' || return 1
 
   # Install Knative Serving
   cat <<-EOF | oc apply -f -
@@ -188,42 +103,42 @@ metadata:
   namespace: ${SERVING_NAMESPACE}
 EOF
 
-  # Wait for 6 pods to appear first
-  timeout 900 '[[ $(oc get pods -n $SERVING_NAMESPACE --no-headers | wc -l) -lt 6 ]]' || return
+  # Wait for 4 pods to appear first
+  timeout 900 '[[ $(oc get pods -n $SERVING_NAMESPACE --no-headers | wc -l) -lt 4 ]]' || return
 
   wait_until_pods_running $SERVING_NAMESPACE || return 1
+
+  wait_until_service_has_external_ip $SERVICEMESH_NAMESPACE istio-ingressgateway || fail_test "Ingress has no external IP"
+
+  wait_until_hostname_resolves "$(kubectl get svc -n $SERVICEMESH_NAMESPACE istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')"
 
   header "Knative Serving installed successfully"
 }
 
 function deploy_serverless_operator(){
   git clone https://github.com/openshift-knative/serverless-operator.git /tmp/serverless-operator
-  /tmp/serverless-operator/hack/catalog.sh | oc apply -n $CS_NS -f -
+  /tmp/serverless-operator/hack/catalog.sh | oc apply -n $OLM_NAMESPACE -f -
+
+  timeout 900 '[[ $(oc get pods -n $OLM_NAMESPACE | grep -c serverless) -eq 0 ]]' || ret
+
+  wait_until_pods_running $OLM_NAMESPACE
+
   cat <<-EOF | kubectl apply -f -
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
 metadata:
   name: serverless-operator-sub
   generateName: serverless-operator-
-  namespace: $OPERATOR_NS
+  namespace: openshift-operators
 spec:
   source: serverless-operator
-  sourceNamespace: $CS_NS
+  sourceNamespace: $OLM_NAMESPACE
   name: serverless-operator
   channel: techpreview
 EOF
-}
 
-function enable_knative_interaction_with_registry() {
-  local configmap_name=config-service-ca
-  local cert_name=service-ca.crt
-  local mount_path=/var/run/secrets/kubernetes.io/servicecerts
-
-  oc -n $SERVING_NAMESPACE create configmap $configmap_name
-  oc -n $SERVING_NAMESPACE annotate configmap $configmap_name service.alpha.openshift.io/inject-cabundle="true"
-  wait_until_configmap_contains $SERVING_NAMESPACE $configmap_name $cert_name
-  oc -n $SERVING_NAMESPACE set volume deployment/controller --add --name=service-ca --configmap-name=$configmap_name --mount-path=$mount_path
-  oc -n $SERVING_NAMESPACE set env deployment/controller SSL_CERT_FILE=$mount_path/$cert_name
+  # Wait for the CRD to appear
+  timeout 900 '[[ $(oc get crd | grep -c knativeservings) -eq 0 ]]' || return 1
 }
 
 function build_knative_client() {
@@ -290,17 +205,6 @@ function delete_test_namespace(){
   oc delete project --ignore-not-found=true kne2etests0 kne2etests1 kne2etests2 kne2etests3 kne2etests4 kne2etests5
 }
 
-function delete_service_mesh(){
-  echo ">> Bringin down Service Mesh"
-  oc delete --ignore-not-found=true -n $SERVICEMESH_NAMESPACE -f https://raw.githubusercontent.com/openshift/knative-serving/$SERVING_RELEASE/openshift/servicemesh/controlplane-install.yaml
-  oc delete --ignore-not-found=true -f https://raw.githubusercontent.com/openshift/knative-serving/$SERVING_RELEASE/openshift/servicemesh/operator-install.yaml
-}
-
-function teardown() {
-  delete_test_namespace
-  delete_service_mesh
-  delete_knative_openshift
-}
 
 echo ">> Check resources"
 echo ">> - meminfo:"
@@ -318,13 +222,9 @@ failed=0
 
 (( !failed )) && build_knative_client || failed=1
 
-(( !failed )) && install_servicemesh || failed=1
-
 (( !failed )) && install_knative_serving || failed=1
 
 (( !failed )) && run_e2e_tests || failed=1
-
-teardown
 
 (( failed )) && exit 1
 

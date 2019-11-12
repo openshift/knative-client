@@ -25,7 +25,7 @@ git checkout -b "$target" "$release"
 
 # Update openshift's master and take all needed files from there.
 git fetch openshift master
-git checkout openshift/master -- openshift OWNERS_ALIASES OWNERS Makefile
+git checkout openshift/master -- openshift OWNERS_ALIASES OWNERS Makefile Dockerfile
 #make RELEASE=$release generate-release
 #make RELEASE=ci generate-release
 git add openshift OWNERS_ALIASES OWNERS Makefile
