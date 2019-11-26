@@ -116,26 +116,9 @@ EOF
 }
 
 function deploy_serverless_operator(){
-  git clone https://github.com/openshift-knative/serverless-operator.git /tmp/serverless-operator
-  /tmp/serverless-operator/hack/catalog.sh | oc apply -n $OLM_NAMESPACE -f -
-
-  timeout 900 '[[ $(oc get pods -n $OLM_NAMESPACE | grep -c serverless) -eq 0 ]]' || ret
+  oc apply -f openshift/serverless/operator-install.yaml
 
   wait_until_pods_running $OLM_NAMESPACE
-
-  cat <<-EOF | kubectl apply -f -
-apiVersion: operators.coreos.com/v1alpha1
-kind: Subscription
-metadata:
-  name: serverless-operator-sub
-  generateName: serverless-operator-
-  namespace: openshift-operators
-spec:
-  source: serverless-operator
-  sourceNamespace: $OLM_NAMESPACE
-  name: serverless-operator
-  channel: techpreview
-EOF
 
   # Wait for the CRD to appear
   timeout 900 '[[ $(oc get crd | grep -c knativeservings) -eq 0 ]]' || return 1
