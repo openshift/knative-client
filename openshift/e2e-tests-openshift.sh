@@ -86,59 +86,11 @@ function timeout() {
   return 0
 }
 
-function install_knative_serving(){
-  header "Installing Knative serving"
-
-  oc new-project $SERVING_NAMESPACE
-
-  # Deploy Serverless Operator
-  deploy_serverless_operator
-
-  # Install Knative Serving
-  cat <<-EOF | oc apply -f -
-apiVersion: serving.knative.dev/v1alpha1
-kind: KnativeServing
-metadata:
-  name: knative-serving
-  namespace: ${SERVING_NAMESPACE}
-EOF
-
-  # Wait for 4 pods to appear first
-  timeout 900 '[[ $(oc get pods -n $SERVING_NAMESPACE --no-headers | wc -l) -lt 4 ]]' || return
-
-  wait_until_pods_running $SERVING_NAMESPACE || return 1
-
-  wait_until_service_has_external_ip $SERVICEMESH_NAMESPACE istio-ingressgateway || fail_test "Ingress has no external IP"
-
-  wait_until_hostname_resolves "$(kubectl get svc -n $SERVICEMESH_NAMESPACE istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')"
-
-  header "Knative Serving installed successfully"
-}
-
-function deploy_serverless_operator(){
+function install_serverless_operator(){
+  header "Installing Serverless Operator"
   git clone https://github.com/openshift-knative/serverless-operator.git /tmp/serverless-operator
-  /tmp/serverless-operator/hack/catalog.sh | oc apply -n $OLM_NAMESPACE -f -
-
-  timeout 900 '[[ $(oc get pods -n $OLM_NAMESPACE | grep -c serverless) -eq 0 ]]' || ret
-
-  wait_until_pods_running $OLM_NAMESPACE
-
-  cat <<-EOF | kubectl apply -f -
-apiVersion: operators.coreos.com/v1alpha1
-kind: Subscription
-metadata:
-  name: serverless-operator-sub
-  generateName: serverless-operator-
-  namespace: openshift-operators
-spec:
-  source: serverless-operator
-  sourceNamespace: $OLM_NAMESPACE
-  name: serverless-operator
-  channel: techpreview
-EOF
-
-  # Wait for the CRD to appear
-  timeout 900 '[[ $(oc get crd | grep -c knativeservings) -eq 0 ]]' || return 1
+  /tmp/serverless-operator/hack/install.sh || return 1
+  header "Serverless Operator installed successfully"
 }
 
 function build_knative_client() {
@@ -222,7 +174,7 @@ failed=0
 
 (( !failed )) && build_knative_client || failed=1
 
-(( !failed )) && install_knative_serving || failed=1
+(( !failed )) && install_serverless_operator || failed=1
 
 (( !failed )) && run_e2e_tests || failed=1
 
