@@ -25,6 +25,8 @@ readonly SERVICEMESH_NAMESPACE="knative-serving-ingress"
 readonly E2E_TIMEOUT="60m"
 readonly E2E_PARALLEL="1"
 readonly OLM_NAMESPACE="openshift-marketplace"
+readonly KSO_IMAGE="registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.3.0:knative-serving-operator"
+readonly KOI_IMAGE="registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.3.0:knative-openshift-ingress"
 env
 
 function scale_up_workers(){
@@ -116,6 +118,10 @@ EOF
 }
 
 function deploy_serverless_operator(){
+
+  export IMAGE_KNATIVE_SERVING_OPERATOR=$KSO_IMAGE
+  export IMAGE_KNATIVE_OPENSHIFT_INGRESS=$KOI_IMAGE
+
   git clone https://github.com/openshift-knative/serverless-operator.git /tmp/serverless-operator
   /tmp/serverless-operator/hack/catalog.sh | oc apply -n $OLM_NAMESPACE -f -
 
