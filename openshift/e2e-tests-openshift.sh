@@ -86,7 +86,7 @@ function timeout() {
   return 0
 }
 
-function install_serverless_operator(){
+function install_serverless(){
   header "Installing Serverless Operator"
   git clone https://github.com/openshift-knative/serverless-operator.git /tmp/serverless-operator
   # unset OPENSHIFT_BUILD_NAMESPACE as its used in serverless-operator's CI environment as a switch
@@ -177,7 +177,7 @@ failed=0
 
 (( !failed )) && build_knative_client || failed=1
 
-(( !failed )) && install_serverless_operator || failed=1
+(( !failed )) && install_serverless || failed=1
 
 (( !failed )) && run_e2e_tests || failed=1
 
