@@ -25,7 +25,28 @@ readonly SERVICEMESH_NAMESPACE="knative-serving-ingress"
 readonly E2E_TIMEOUT="60m"
 readonly E2E_PARALLEL="1"
 readonly OLM_NAMESPACE="openshift-marketplace"
+readonly EVENTING_NAMESPACE="knative-eventing"
+readonly EVENTING_CATALOGSOURCE="https://raw.githubusercontent.com/openshift/knative-eventing/master/openshift/olm/knative-eventing.catalogsource.yaml"
 env
+
+# Loops until duration (car) is exceeded or command (cdr) returns non-zero
+function timeout() {
+  SECONDS=0; TIMEOUT=$1; shift
+  while eval $*; do
+    sleep 5
+    [[ $SECONDS -gt $TIMEOUT ]] && echo "ERROR: Timed out" && return 1
+  done
+  return 0
+}
+
+function create_namespace(){
+  cat <<-EOF | oc apply -f -
+	apiVersion: v1
+	kind: Namespace
+	metadata:
+	  name: $1
+	EOF
+}
 
 function scale_up_workers(){
   local cluster_api_ns="openshift-machine-api"
@@ -76,16 +97,6 @@ function wait_until_hostname_resolves() {
   return 1
 }
 
-# Loops until duration (car) is exceeded or command (cdr) returns non-zero
-function timeout() {
-  SECONDS=0; TIMEOUT=$1; shift
-  while eval $*; do
-    sleep 5
-    [[ $SECONDS -gt $TIMEOUT ]] && echo "ERROR: Timed out" && return 1
-  done
-  return 0
-}
-
 function install_serverless(){
   header "Installing Serverless Operator"
   git clone https://github.com/openshift-knative/serverless-operator.git /tmp/serverless-operator
@@ -94,6 +105,57 @@ function install_serverless(){
   unset OPENSHIFT_BUILD_NAMESPACE
   /tmp/serverless-operator/hack/install.sh || return 1
   header "Serverless Operator installed successfully"
+}
+
+function install_knative_eventing(){
+  header "Installing Knative Eventing"
+
+  create_namespace $EVENTING_NAMESPACE
+  oc apply -n $OLM_NAMESPACE -f $EVENTING_CATALOGSOURCE
+  timeout 900 '[[ $(oc get pods -n $OLM_NAMESPACE | grep -c knative-eventing) -eq 0 ]]' || return 1
+  wait_until_pods_running $OLM_NAMESPACE || return 1
+
+  # Deploy Knative Operators Eventing
+  deploy_knative_operator eventing KnativeEventing || return 1
+
+  # Wait for 6 pods to appear first
+  timeout 900 '[[ $(oc get pods -n $EVENTING_NAMESPACE --no-headers | wc -l) -lt 6 ]]' || return 1
+  wait_until_pods_running $EVENTING_NAMESPACE || return 1
+
+  header "Knative Eventing installed successfully"
+}
+
+function deploy_knative_operator(){
+  local COMPONENT="knative-$1"
+  local API_GROUP=$1
+  local KIND=$2
+
+  if oc get crd operatorgroups.operators.coreos.com >/dev/null 2>&1; then
+    cat <<-EOF | oc apply -f -
+	apiVersion: operators.coreos.com/v1
+	kind: OperatorGroup
+	metadata:
+	  name: ${COMPONENT}
+	  namespace: ${COMPONENT}
+	EOF
+  fi
+  cat <<-EOF | oc apply -f -
+	apiVersion: operators.coreos.com/v1alpha1
+	kind: Subscription
+	metadata:
+	  name: ${COMPONENT}-subscription
+	  generateName: ${COMPONENT}-
+	  namespace: ${COMPONENT}
+	spec:
+	  source: ${COMPONENT}-operator
+	  sourceNamespace: $OLM_NAMESPACE
+	  name: ${COMPONENT}-operator
+	  channel: alpha
+	EOF
+
+  # # Wait until the server knows about the Install CRD before creating
+  # # an instance of it below
+  timeout 60 '[[ $(oc get crd knative${API_GROUP}s.${API_GROUP}.knative.dev -o jsonpath="{.status.acceptedNames.kind}" | grep -c $KIND) -eq 0 ]]' || return 1
 }
 
 function build_knative_client() {
@@ -149,17 +211,6 @@ function wait_until_pods_running() {
   return 1
 }
 
-function delete_knative_openshift() {
-  echo ">> Bringing down Knative Serving"
-  oc delete --ignore-not-found=true -f openshift/serverless/operator-install.yaml
-  oc delete --ignore-not-found=true project $SERVING_NAMESPACE
-}
-
-function delete_test_namespace(){
-  echo ">> Deleting test namespaces"
-  oc delete project --ignore-not-found=true kne2etests0 kne2etests1 kne2etests2 kne2etests3 kne2etests4 kne2etests5
-}
-
 
 echo ">> Check resources"
 echo ">> - meminfo:"
@@ -178,6 +229,8 @@ failed=0
 (( !failed )) && build_knative_client || failed=1
 
 (( !failed )) && install_serverless || failed=1
+
+(( !failed )) && install_knative_eventing || failed=1
 
 (( !failed )) && run_e2e_tests || failed=1
 
