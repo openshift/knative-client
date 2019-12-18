@@ -22,7 +22,7 @@ install: build
 .PHONY: install
 
 build:
-	./hack/build.sh -f
+	TAG="v0.10.0" ./hack/build.sh -f
 .PHONY: build
 
 build-cross:
