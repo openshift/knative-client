@@ -26,7 +26,6 @@ readonly E2E_TIMEOUT="60m"
 readonly E2E_PARALLEL="1"
 readonly OLM_NAMESPACE="openshift-marketplace"
 readonly EVENTING_NAMESPACE="knative-eventing"
-readonly EVENTING_CATALOGSOURCE="https://raw.githubusercontent.com/openshift/knative-eventing/master/openshift/olm/knative-eventing.catalogsource.yaml"
 env
 
 # Loops until duration (car) is exceeded or command (cdr) returns non-zero
@@ -111,15 +110,21 @@ function install_knative_eventing(){
   header "Installing Knative Eventing"
 
   create_namespace $EVENTING_NAMESPACE
-  oc apply -n $OLM_NAMESPACE -f $EVENTING_CATALOGSOURCE
+
+  CURRENT_GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+  RELEASE_YAML="https://raw.githubusercontent.com/openshift/knative-eventing/${CURRENT_GIT_BRANCH}/openshift/release/knative-eventing-ci.yaml,https://raw.githubusercontent.com/openshift-knative/knative-eventing-operator/master/deploy/resources/networkpolicies.yaml"
+  sed "s|--filename=.*|--filename=${RELEASE_YAML}|"  openshift/olm/knative-eventing.catalogsource.yaml > knative-eventing.catalogsource.yaml
+
+  oc apply -n $OLM_NAMESPACE -f knative-eventing.catalogsource.yaml
+
   timeout 900 '[[ $(oc get pods -n $OLM_NAMESPACE | grep -c knative-eventing) -eq 0 ]]' || return 1
   wait_until_pods_running $OLM_NAMESPACE || return 1
 
   # Deploy Knative Operators Eventing
   deploy_knative_operator eventing KnativeEventing || return 1
 
-  # Wait for 6 pods to appear first
-  timeout 900 '[[ $(oc get pods -n $EVENTING_NAMESPACE --no-headers | wc -l) -lt 6 ]]' || return 1
+  # Wait for 5 pods to appear first
+  timeout 900 '[[ $(oc get pods -n $EVENTING_NAMESPACE --no-headers | wc -l) -lt 5 ]]' || return 1
   wait_until_pods_running $EVENTING_NAMESPACE || return 1
 
   header "Knative Eventing installed successfully"
