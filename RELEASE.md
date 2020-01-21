@@ -32,12 +32,13 @@ $ git push openshift release-v0.12.0
 # Jump into the knative client config directory in the openshift/release
 $ cd ci-operator/config/openshift/knative-client
 
-# Copy over the nightly builds config to a release specific config with
+# Copy over the last release's config to a release specific config with
 # the name of the yaml file ends with the new release branch name (e.g. release-v0.12.0)
-$ cp openshift-knative-client-release-next.yaml openshift-knative-client-release-v0.12.0.yaml
+$ cp openshift-knative-client-release-v0.11.0.yaml openshift-knative-client-release-v0.12.0.yaml
 
 # Adapt the configuration for the kn new image name
 # - Change .promotion.name to a release specific name (knative-v0.12.0)
+# - Change .binary_build_commands to a release tag (TAG=v0.12.0 make install)
 $ vi openshift-knative-client-release-v0.12.0.yaml
 ```
 
@@ -106,21 +107,17 @@ $ git push
 # We must raise a PR against release-branch after CI is setup for it, this ensures the image is mirrored at quay
 ```
 
-### Update Dockerfile and Makefile in release branch with correct version and tag:
+### Update Dockerfile in release branch with correct version:
 ```bash
-# We'll need a few changes in Dockerfile and Makefile to ensure release version mention in Dockerfile labels
-# and for `kn version command`
-
-# Update value of LABEL 'version' to one being released (e.g v0.12.0)
+# Update Dockerfile with current release number:
+# - Change value of tag to current release (RUN TAG="v0.12.0" make build)
+# - Change value of LABEL 'version' to current release (v0.12.0)
 $ vi Dockerfile
-
-# Uncomment and update line no: 12 of Makefile with correct version being released (e.g. v0.12.0)
-$ vi Makefile
 
 # Verify the changes and raise a PR against release branch
 $ git status
 $ git add .
-$ git commit -m "Update Dockerfile and Makefile for release v0.12.0"
+$ git commit -m "Update Dockerfile for release v0.12.0"
 ```
 
 * For further changes which are specific to OpenShift, raise PR against release branch as shown above.
