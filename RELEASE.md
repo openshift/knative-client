@@ -93,20 +93,6 @@ $ git push
 # Once PR against openshift/release repo is merged, the CI is setup for release-branch
 ```
 
-### Create a PR against release branch of openshift/knative-client repo to ensure CI runs and trigger image mirroring
-```bash
-# In openshift/knative-client repo, go to the release-branch (for e.g. release-v0.12.0)
-$ git checkout release-v0.12.0
-# Create a test PR to run against release-v0.12.0 branch
-$ git checkout -b pr/test-release-v0.12.0
-$ date > ci
-$ git add .
-$ git commit -m "Test CI setup for release-v0.12.0 branch"
-$ git push
-# raise a PR against release-v0.12.0 branch from pr/test-release-v0.12.0 branch
-# We must raise a PR against release-branch after CI is setup for it, this ensures the image is mirrored at quay
-```
-
 ### Update Dockerfile in release branch with correct version:
 ```bash
 # Update Dockerfile with current release number:
@@ -119,8 +105,10 @@ $ git status
 $ git add .
 $ git commit -m "Update Dockerfile for release v0.12.0"
 ```
+Note: After CI is setup for release branch, we'll need to raise at least one PR against
+target release branch, have CI run and merge of PR, this ensures image gets mirrored at quay as postsubmit job.
 
-* For further changes which are specific to OpenShift, raise PR against release branch as shown above.
+* For further changes which are specific to OpenShift, raise PR against release branch.
 
 ### Once the changes to release branch is finalized, and we are ready for QA, create tag and push:
 ```bash
