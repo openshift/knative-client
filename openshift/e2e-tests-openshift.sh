@@ -176,6 +176,10 @@ function run_e2e_tests(){
   # Add local dir to have access to built kn
   export PATH=$PATH:${REPO_ROOT_DIR}
   export GO111MODULE=on
+  # In CI environment GOFLAGS is set to '-mod=vendor', unsetting it and providing explicit flag below
+  # while invoking go e2e tests. Unsetting to keep using -mod=vendor irrespective of whether GOFLAGS is set or not.
+  # Ideally this should be overridden but see https://github.com/golang/go/issues/35827
+  unset GOFLAGS
   go_test_e2e -timeout=$E2E_TIMEOUT -parallel=$E2E_PARALLEL -mod=vendor ./test/e2e || fail_test
   return $failed
 }
