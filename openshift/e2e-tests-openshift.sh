@@ -23,7 +23,6 @@ readonly KN_DEFAULT_TEST_IMAGE="gcr.io/knative-samples/helloworld-go"
 readonly SERVING_NAMESPACE="knative-serving"
 readonly SERVICEMESH_NAMESPACE="knative-serving-ingress"
 readonly E2E_TIMEOUT="60m"
-readonly E2E_PARALLEL="1"
 readonly OLM_NAMESPACE="openshift-marketplace"
 readonly EVENTING_NAMESPACE="knative-eventing"
 readonly EVENTING_CATALOGSOURCE="https://raw.githubusercontent.com/openshift/knative-eventing/master/openshift/olm/knative-eventing.catalogsource.yaml"
@@ -180,7 +179,7 @@ function run_e2e_tests(){
   # while invoking go e2e tests. Unsetting to keep using -mod=vendor irrespective of whether GOFLAGS is set or not.
   # Ideally this should be overridden but see https://github.com/golang/go/issues/35827
   unset GOFLAGS
-  go_test_e2e -timeout=$E2E_TIMEOUT -parallel=$E2E_PARALLEL -mod=vendor ./test/e2e || fail_test
+  go_test_e2e -timeout=$E2E_TIMEOUT  -mod=vendor ./test/e2e || fail_test
   return $failed
 }
 
