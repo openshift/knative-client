@@ -1,6 +1,9 @@
 FROM registry.access.redhat.com/ubi8/ubi-minimal:latest
 
 RUN yum -y install zip && yum clean all
+ADD package_cliartifacts.sh .
+ADD LICENSE .
+ADD kn-*-amd64 .
 RUN bash package_cliartifacts.sh
 RUN mkdir -p /usr/share/kn/{linux_amd64,macos,windows} &&
     mv kn-linux-amd64.tar.gz /usr/share/kn/linux_amd64/kn-linux-amd64.tar.gz && \
