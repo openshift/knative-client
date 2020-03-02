@@ -1,6 +1,6 @@
 FROM registry.access.redhat.com/ubi8/ubi-minimal:latest
 
-RUN yum -y install zip && yum clean all
+RUN microdnf install -y zip
 ADD package_cliartifacts.sh .
 ADD LICENSE .
 ADD kn-*-amd64 .
