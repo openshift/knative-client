@@ -25,6 +25,6 @@ git checkout -b "$target" "$release"
 
 # Update openshift's master and take all needed files from there.
 git fetch openshift master
-git checkout openshift/master openshift OWNERS_ALIASES OWNERS Makefile Dockerfile Dockerfile.cliartifacts.rhel container.yaml content_sets.yaml
+git checkout openshift/master openshift OWNERS_ALIASES OWNERS Makefile Dockerfile.rhel Dockerfile.cliartifacts.rhel package_cliartifacts.sh container.yaml content_sets.yaml
 git add openshift OWNERS_ALIASES OWNERS Makefile
 git commit -m "Add openshift specific files."
