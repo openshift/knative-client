@@ -179,6 +179,8 @@ function run_e2e_tests(){
   # while invoking go e2e tests. Unsetting to keep using -mod=vendor irrespective of whether GOFLAGS is set or not.
   # Ideally this should be overridden but see https://github.com/golang/go/issues/35827
   unset GOFLAGS
+
+  oc adm policy add-scc-to-group anyuid system:authenticated
   go_test_e2e -timeout=$E2E_TIMEOUT -mod=vendor ./test/e2e || fail_test
   return $failed
 }
