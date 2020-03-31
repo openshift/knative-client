@@ -19,7 +19,6 @@ URL:            https://github.com/openshift/knative-client/tree/release-%{kn_cl
 ExclusiveArch:  x86_64
 
 Source0:        %{source_tar}
-BuildRequires:  gcc
 BuildRequires:  golang >= %{golang_version}
 Provides:       %{package_name}
 Obsoletes:      %{package_name} < %{kn_version}
@@ -48,7 +47,6 @@ install -p -m 755 kn-windows-amd64.exe %{buildroot}/%{_datadir}/%{name}-redistri
 
 %package redistributable
 Summary:        %{product_name} client CLI binaries for Linux, macOS and Windows
-BuildRequires:  gcc
 BuildRequires:  golang >= %{golang_version}
 Provides:       %{package_name}-redistributable
 Obsoletes:      %{package_name} < %{kn_version}
