@@ -1,0 +1,22 @@
+FROM registry.access.redhat.com/ubi8/ubi-minimal:latest
+
+RUN microdnf install -y zip tar gzip python2
+ADD package_cliartifacts.sh LICENSE kn-*-amd64* .
+RUN bash package_cliartifacts.sh && \
+    mkdir -p /usr/share/kn/linux_amd64 && \
+    mkdir -p /usr/share/kn/macos && \
+    mkdir -p /usr/share/kn/windows && \
+    mv kn-linux-amd64.tar.gz /usr/share/kn/linux_amd64/ && \
+    mv kn-macos-amd64.tar.gz /usr/share/kn/macos/ && \
+    mv kn-windows-amd64.zip /usr/share/kn/windows/
+
+LABEL \
+      com.redhat.component="openshift-serverless-1-tech-preview-client-kn-rhel8-container" \
+      name="openshift-serverless-1-tech-preview/client-kn-rhel8" \
+      version="v0.13.0" \
+      summary="Red Hat OpenShift Serverless 1 kn CLI" \
+      description="CLI client 'kn' for managing Red Hat OpenShift Serverless 1" \
+      io.k8s.display-name="Red Hat OpenShift Serverless 1 kn CLI" \
+      io.k8s.description="CLI client 'kn' for managing Red Hat OpenShift Serverless 1" \
+      io.openshift.build.source-location="https://github.com/openshift/knative-client" \
+      maintainer="serverless-support@redhat.com"
