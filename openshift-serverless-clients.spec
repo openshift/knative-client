@@ -6,8 +6,8 @@
 %global kn_version 0.13.1
 %global kn_release 1
 %global kn_cli_version v%{kn_version}
-%global source_dir knative-client-%{kn_version}-%{kn_release}
-%global source_tar %{source_dir}.tar.gz
+%global source_dir knative-client
+%global source_tar %{source_dir}-%{kn_version}-%{kn_release}.tar.gz
 
 Name:           %{package_name}
 Version:        %{kn_version}
