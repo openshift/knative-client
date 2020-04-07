@@ -1,0 +1,22 @@
+FROM rhel8/go-toolset:1.13.4 AS builder
+WORKDIR /opt/app-root/src/go/src/github.com/knative/client
+USER root
+COPY . .
+RUN TAG="v0.12.0" make build-cross-package
+
+FROM ubi8:8-released
+RUN mkdir -p /usr/share/kn/{linux_amd64,macos,windows}
+COPY --from=builder /opt/app-root/src/go/src/github.com/knative/client/kn-linux-amd64.tar.gz /usr/share/kn/linux_amd64/kn-linux-amd64.tar.gz
+COPY --from=builder /opt/app-root/src/go/src/github.com/knative/client/kn-macos-amd64.tar.gz /usr/share/kn/macos/kn-macos-amd64.tar.gz
+COPY --from=builder /opt/app-root/src/go/src/github.com/knative/client/kn-windows-amd64.zip /usr/share/kn/windows/kn-windows-amd64.zip
+
+LABEL \
+      com.redhat.component="openshift-serverless-1-tech-preview-client-kn-rhel8-container" \
+      name="openshift-serverless-1-tech-preview/client-kn-rhel8" \
+      version="v0.12.0" \
+      summary="Red Hat OpenShift Serverless 1 kn CLI" \
+      description="CLI client 'kn' for managing Red Hat OpenShift Serverless 1" \
+      io.k8s.display-name="Red Hat OpenShift Serverless 1 kn CLI" \
+      io.k8s.description="CLI client 'kn' for managing Red Hat OpenShift Serverless 1" \
+      io.openshift.build.source-location="https://github.com/openshift/knative-client" \
+      maintainer="serverless-support@redhat.com"
