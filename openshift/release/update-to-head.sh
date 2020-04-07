@@ -20,15 +20,28 @@
 set -e
 REPO_NAME=`basename $(git rev-parse --show-toplevel)`
 
+# Custom files
+custom_files=$(cat <<EOT | tr '\n' ' '
+openshift
+OWNERS_ALIASES
+OWNERS
+Makefile
+Dockerfile.rhel
+Dockerfile.cliartifacts.rhel
+package_cliartifacts.sh
+container.yaml
+content_sets.yaml
+openshift-serverless-clients.spec
+EOT
+)
+
 # Reset release-next to upstream/master.
 git fetch upstream master
 git checkout upstream/master -B release-next
 
 # Update openshift's master and take all needed files from there.
 git fetch openshift master
-git checkout openshift/master openshift OWNERS_ALIASES OWNERS Makefile Dockerfile.rhel Dockerfile.cliartifacts.rhel package_cliartifacts.sh container.yaml content_sets.yaml
-#make generate-dockerfiles
-#make RELEASE=ci generate-release
+git checkout openshift/master $custom_files
 git add openshift OWNERS_ALIASES OWNERS Makefile
 git commit -m ":open_file_folder: Update openshift specific files."
 

@@ -30,6 +30,7 @@ Dockerfile.cliartifacts.rhel
 package_cliartifacts.sh
 container.yaml
 content_sets.yaml
+openshift-serverless-clients.spec
 EOT
 )
 
