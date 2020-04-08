@@ -8,8 +8,8 @@ FROM ubi8:8-released
 COPY --from=builder /opt/app-root/src/go/src/github.com/knative/client/kn /ko-app/kn
 
 LABEL \
-      com.redhat.component="openshift-serverless-1-tech-preview-client-kn-rhel8-container" \
-      name="openshift-serverless-1-tech-preview/client-kn-rhel8" \
+      com.redhat.component="openshift-serverless-1-client-kn-rhel8-container" \
+      name="openshift-serverless-1/client-kn-rhel8" \
       version="0.13.1" \
       summary="Red Hat OpenShift Serverless 1 kn CLI" \
       description="CLI client 'kn' for managing Red Hat OpenShift Serverless 1" \
