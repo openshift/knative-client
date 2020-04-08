@@ -11,8 +11,8 @@ COPY --from=builder /opt/app-root/src/go/src/github.com/knative/client/kn-macos-
 COPY --from=builder /opt/app-root/src/go/src/github.com/knative/client/kn-windows-amd64.zip /usr/share/kn/windows/kn-windows-amd64.zip
 
 LABEL \
-      com.redhat.component="openshift-serverless-1-tech-preview-client-kn-rhel8-container" \
-      name="openshift-serverless-1-tech-preview/client-kn-rhel8" \
+      com.redhat.component="openshift-serverless-1-client-kn-rhel8-container" \
+      name="openshift-serverless-1/client-kn-rhel8" \
       version="v0.12.0" \
       summary="Red Hat OpenShift Serverless 1 kn CLI" \
       description="CLI client 'kn' for managing Red Hat OpenShift Serverless 1" \
