@@ -1,3 +1,5 @@
+#!/usr/bin/python2
+
 import BaseHTTPServer, os, re, signal, SimpleHTTPServer, socket, sys, tarfile, tempfile, threading, time, zipfile
 
 signal.signal(signal.SIGTERM, lambda signum, frame: sys.exit(0))
