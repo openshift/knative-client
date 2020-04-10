@@ -1,22 +1,25 @@
-FROM rhel8/go-toolset:1.13.4 AS builder
+FROM ubi8-minimal:8-released AS packager
 WORKDIR /opt/app-root/src/go/src/github.com/knative/client
-USER root
-COPY . .
-RUN TAG="v0.12.0" make build-cross-package
+# add signed cross platform binaries from lookaside cache
+ADD kn-linux-amd64 kn-darwin-amd64 kn-windows-amd64.exe .
+COPY package_cliartifacts.sh LICENSE .
+RUN microdnf install -y zip tar gzip && \
+    bash package_cliartifacts.sh
 
-FROM ubi8:8-released
-RUN mkdir -p /usr/share/kn/{linux_amd64,macos,windows}
-COPY --from=builder /opt/app-root/src/go/src/github.com/knative/client/kn-linux-amd64.tar.gz /usr/share/kn/linux_amd64/kn-linux-amd64.tar.gz
-COPY --from=builder /opt/app-root/src/go/src/github.com/knative/client/kn-macos-amd64.tar.gz /usr/share/kn/macos/kn-macos-amd64.tar.gz
-COPY --from=builder /opt/app-root/src/go/src/github.com/knative/client/kn-windows-amd64.zip /usr/share/kn/windows/kn-windows-amd64.zip
+FROM ubi8-minimal:8-released
+RUN microdnf install -y python2 && \
+  mkdir -p /usr/share/kn/{linux_amd64,macos,windows}
+COPY --from=packager /opt/app-root/src/go/src/github.com/knative/client/kn-linux-amd64.tar.gz /usr/share/kn/linux_amd64/
+COPY --from=packager /opt/app-root/src/go/src/github.com/knative/client/kn-macos-amd64.tar.gz /usr/share/kn/macos/
+COPY --from=packager /opt/app-root/src/go/src/github.com/knative/client/kn-windows-amd64.zip  /usr/share/kn/windows/
 
 LABEL \
-      com.redhat.component="openshift-serverless-1-client-kn-rhel8-container" \
-      name="openshift-serverless-1/client-kn-rhel8" \
-      version="v0.12.0" \
-      summary="Red Hat OpenShift Serverless 1 kn CLI" \
-      description="CLI client 'kn' for managing Red Hat OpenShift Serverless 1" \
-      io.k8s.display-name="Red Hat OpenShift Serverless 1 kn CLI" \
-      io.k8s.description="CLI client 'kn' for managing Red Hat OpenShift Serverless 1" \
+      com.redhat.component="openshift-serverless-1-client-kn-cli-artifacts-rhel8-container" \
+      name="openshift-serverless-1/client-kn-cli-artifacts-rhel8" \
+      version="v0.13.2" \
+      summary="Red Hat OpenShift Serverless 1 kn CLI artifacts image" \
+      description="Image of 'kn' CLI cross platform binaries for managing Red Hat OpenShift Serverless 1" \
+      io.k8s.display-name="Red Hat OpenShift Serverless 1 kn CLI artifacts image" \
+      io.k8s.description="Image of 'kn' CLI cross platform binaries for managing Red Hat OpenShift Serverless 1" \
       io.openshift.build.source-location="https://github.com/openshift/knative-client" \
       maintainer="serverless-support@redhat.com"
