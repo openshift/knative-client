@@ -32,6 +32,7 @@ package_cliartifacts.sh
 container.yaml
 content_sets.yaml
 openshift-serverless-clients.spec
+serve.py
 EOT
 )
 
