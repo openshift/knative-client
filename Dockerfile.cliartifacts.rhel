@@ -17,9 +17,9 @@ LABEL \
       com.redhat.component="openshift-serverless-1-client-kn-cli-artifacts-rhel8-container" \
       name="openshift-serverless-1/client-kn-cli-artifacts-rhel8" \
       version="v0.13.2" \
-      summary="Red Hat OpenShift Serverless 1 kn CLI artifacts image" \
-      description="Image of 'kn' CLI cross platform binaries for managing Red Hat OpenShift Serverless 1" \
-      io.k8s.display-name="Red Hat OpenShift Serverless 1 kn CLI artifacts image" \
-      io.k8s.description="Image of 'kn' CLI cross platform binaries for managing Red Hat OpenShift Serverless 1" \
+      summary="Red Hat OpenShift Serverless 1 kn CLI artifacts" \
+      description="'kn' CLI cross platform binaries for managing Red Hat OpenShift Serverless 1" \
+      io.k8s.display-name="Red Hat OpenShift Serverless 1 kn CLI artifacts" \
+      io.k8s.description="'kn' CLI cross platform binaries for managing Red Hat OpenShift Serverless 1" \
       io.openshift.build.source-location="https://github.com/openshift/knative-client" \
       maintainer="serverless-support@redhat.com"
