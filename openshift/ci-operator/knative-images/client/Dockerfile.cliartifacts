@@ -7,5 +7,4 @@ RUN bash package_cliartifacts.sh && \
     mv kn-linux-amd64.tar.gz /usr/share/kn/linux_amd64/ && \
     mv kn-macos-amd64.tar.gz /usr/share/kn/macos/ && \
     mv kn-windows-amd64.zip /usr/share/kn/windows/
-ENTRYPOINT ["/usr/bin/python2"]
-CMD ["serve.py"]
+CMD ["python2", "serve.py"]
