@@ -49,13 +49,10 @@ $ vi openshift-knative-client-release-v0.14.0.yaml
 # Jump to top-level repo directory
 $ cd ../../../../
 
-# Call Prow job generators via Docker. You need a local Docker daemon installed
+# Call Prow job generators using 'make jobs' (you need a local Docker daemon installed)
 # This will generate necessary presubmit and postsubmit prow jobs config YAML files
-$ docker run -it -v $(pwd)/ci-operator:/ci-operator:z  \
-     registry.svc.ci.openshift.org/ci/ci-operator-prowgen:latest \
-     --from-dir /ci-operator/config --to-dir /ci-operator/jobs
-
-$ docker run -it -v $(pwd)/ci-operator/jobs:/jobs:z registry.svc.ci.openshift.org/ci/determinize-prow-jobs:latest --prow-jobs-dir /jobs
+# ref: [doc](https://docs.google.com/document/d/1SQ_qlkcplqhe8h6ONXdgBr7YUVbs4oRSj4ISl3gpLW4/edit#heading=h.8w7nj9363nsd)
+$ make jobs
 ```
 
 * Create image mirroring config:
