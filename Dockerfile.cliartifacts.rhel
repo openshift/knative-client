@@ -19,7 +19,7 @@ CMD ["python2", "serve.py"]
 LABEL \
       com.redhat.component="openshift-serverless-1-client-kn-cli-artifacts-rhel8-container" \
       name="openshift-serverless-1/client-kn-cli-artifacts-rhel8" \
-      version="nightly" \
+      version="0.13.2" \
       summary="Red Hat OpenShift Serverless 1 kn CLI artifacts" \
       description="'kn' CLI cross platform binaries for managing Red Hat OpenShift Serverless 1" \
       io.k8s.display-name="Red Hat OpenShift Serverless 1 kn CLI artifacts" \
