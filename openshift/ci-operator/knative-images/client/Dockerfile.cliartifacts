@@ -1,5 +1,4 @@
 FROM registry.access.redhat.com/ubi8/ubi-minimal:latest
-WORKDIR /opt/app-root/src/go/src/github.com/knative/client
 RUN microdnf install -y zip tar gzip python2
 ADD package_cliartifacts.sh LICENSE kn-*-amd64* serve.py ./
 RUN bash package_cliartifacts.sh && \
