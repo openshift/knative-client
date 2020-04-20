@@ -8,13 +8,13 @@ RUN microdnf install -y zip tar gzip && \
 
 FROM ubi8-minimal:8-released
 WORKDIR /opt/app-root/src/go/src/github.com/knative/client
-RUN microdnf install -y python2 && \
+RUN microdnf install -y python3 && \
   mkdir -p /usr/share/kn/{linux_amd64,macos,windows}
 COPY serve.py .
 COPY --from=packager /opt/app-root/src/go/src/github.com/knative/client/kn-linux-amd64.tar.gz /usr/share/kn/linux_amd64/
 COPY --from=packager /opt/app-root/src/go/src/github.com/knative/client/kn-macos-amd64.tar.gz /usr/share/kn/macos/
 COPY --from=packager /opt/app-root/src/go/src/github.com/knative/client/kn-windows-amd64.zip  /usr/share/kn/windows/
-CMD ["python2", "serve.py"]
+CMD ["python3", "serve.py"]
 
 LABEL \
       com.redhat.component="openshift-serverless-1-client-kn-cli-artifacts-rhel8-container" \
