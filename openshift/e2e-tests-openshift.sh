@@ -164,7 +164,6 @@ function run_e2e_tests(){
   # Add anyuid scc to all authenticated users so e2e tests for --user flag can user any user id
   oc adm policy add-scc-to-group anyuid system:authenticated
 
-  go_test_e2e -tags="e2e $TAGS" -timeout=$E2E_TIMEOUT -mod=vendor ./test/e2e || fail_test
   report_go_test \
     ./test/e2e \
     -v -timeout=$E2E_TIMEOUT -mod=vendor \
