@@ -273,8 +273,6 @@ function install_knative_eventing(){
   timeout_non_zero 900 '[[ $(oc get pods -n $OLM_NAMESPACE | grep -c knative-eventing) -eq 0 ]]' || return 1
   wait_until_pods_running $OLM_NAMESPACE
 
-  oc get pod -n $OLM_NAMESPACE -o yaml
-
   # Deploy Knative Operators Eventing
   deploy_knative_operator eventing KnativeEventing
 
