@@ -95,21 +95,15 @@ $ git push
 # Once PR against openshift/release repo is merged, the CI is setup for release-branch
 ```
 
-### Update Dockerfiles and RPM SPEC file in release branch with correct version:
+### Update RPM SPEC file in release branch with correct version:
 ```bash
-# Update Dockerfiles namely: Dockerfile.rhel and Dockerfile.cliartifacts.rhel with current release number:
-# - Change value of tag to current release (RUN TAG="v0.14.0" make build)
-# - Change value of LABEL 'version' to current release (v0.14.0)
-$ vi Dockerfile.rhel
-$ vi Dockerfile.cliartifacts.rhel
-
 # Update RPM SPEC file, update the version and add changelog entry
 $ vi openshift-serverless-clients.spec
 
 # Verify the changes and raise a PR against release branch
 $ git status
 $ git add .
-$ git commit -m "Update Dockerfiles and SPEC file for release v0.14.0"
+$ git commit -m "Update SPEC file for release v0.14.0"
 ```
 Note: After CI is setup for release branch, we'll need to raise at least one PR against
 target release branch, have CI run and merge of PR, this ensures image gets mirrored at quay as postsubmit job.
