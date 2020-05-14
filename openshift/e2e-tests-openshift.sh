@@ -205,11 +205,11 @@ function wait_until_pods_running() {
 
 function install_serverless_1_6(){
   header "Installing Serverless Operator"
-  git clone --branch release-1.6 https://github.com/openshift-knative/serverless-operator.git /tmp/serverless-operator
+  git clone --branch release-1.6 https://github.com/openshift-knative/serverless-operator.git /tmp/serverless-operator-16
   # unset OPENSHIFT_BUILD_NAMESPACE as its used in serverless-operator's CI environment as a switch
   # to use CI built images, we want pre-built images of k-s-o and k-o-i
   unset OPENSHIFT_BUILD_NAMESPACE
-  /tmp/serverless-operator/hack/install.sh || return 1
+  /tmp/serverless-operator-16/hack/install.sh || return 1
   header "Serverless Operator installed successfully"
 }
 
