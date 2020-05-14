@@ -301,11 +301,11 @@ failed=0
 
 (( !failed )) && build_knative_client || failed=1
 
-(( !failed )) && install_serverless || failed=1
+#(( !failed )) && install_serverless || failed=1
 
-(( !failed )) && run_e2e_tests serving || failed=1
+#(( !failed )) && run_e2e_tests serving || failed=1
 
-(( !failed )) && teardown_serverless || failed=1
+#(( !failed )) && teardown_serverless || failed=1
 
 (( !failed )) && install_serverless_1_6 || failed=1
 
