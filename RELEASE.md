@@ -130,7 +130,7 @@ Create a new pull request to update `master` branch.
 ### Once the changes to release branch is finalized, and we are ready for QA, create tag and push:
 ```bash
 $ git tag openshift-v0.14.0
-$ git push --tags
+$ git push openshift openshift-v0.14.0
 ```
 
 Note: Notify any changes required for this release, for e.g.: new commands, commands output update, etc. to docs team.
