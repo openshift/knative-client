@@ -113,6 +113,20 @@ target release branch, have CI run and merge of PR, this ensures image gets mirr
 
 * For further changes which are specific to OpenShift, raise PR against release branch.
 
+### Update RPM SPEC file in master branch with latest version:
+Once updated SPEC file is merged into release branch it should be synced with `master` branch file to ensure that log will be stacked correctly with the future releases.
+
+```bash
+# Alternatively you can cherry-pick spec file commit from release branch to master
+git checkout openshift/master
+git checkout openshift/release-v0.14.0 openshift-serverless-clients.spec
+
+git add . 
+git commit -m "Update SPEC file for latest release"
+git push 
+```
+Create a new pull request to update `master` branch.
+
 ### Once the changes to release branch is finalized, and we are ready for QA, create tag and push:
 ```bash
 $ git tag openshift-v0.14.0
