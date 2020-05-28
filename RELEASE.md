@@ -53,6 +53,9 @@ $ cd ../../../../
 # This will generate necessary presubmit and postsubmit prow jobs config YAML files
 # ref: [doc](https://docs.google.com/document/d/1SQ_qlkcplqhe8h6ONXdgBr7YUVbs4oRSj4ISl3gpLW4/edit#heading=h.8w7nj9363nsd)
 $ make jobs
+
+# Update generated metadata `zz_generated_metadata`
+$ make ci-operator-config
 ```
 
 * Create image mirroring config:
