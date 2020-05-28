@@ -14,8 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-source $(dirname $0)/../vendor/knative.dev/test-infra/scripts/library.sh
-source $(dirname $0)/../vendor/knative.dev/test-infra/scripts/e2e-tests.sh
+readonly ROOT_DIR=$(dirname $0)/..
+source ${ROOT_DIR}/scripts/test-infra/library.sh
+source ${ROOT_DIR}/scripts/test-infra/e2e-tests.sh
 
 set -x
 
