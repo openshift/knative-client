@@ -271,6 +271,12 @@ cross_build() {
   export CGO_ENABLED=0
   echo "   🐧 kn-linux-amd64"
   GOOS=linux GOARCH=amd64 go build -mod=vendor -ldflags "${ld_flags}" -o ./kn-linux-amd64 ./cmd/... || failed=1
+  echo "   🐧 kn-linux-arm64"
+  GOOS=linux GOARCH=arm64 go build -mod=vendor -ldflags "${ld_flags}" -o ./kn-linux-arm64 ./cmd/... || failed=1
+  echo "   🐧 kn-linux-ppc64le"
+  GOOS=linux GOARCH=ppc64le go build -mod=vendor -ldflags "${ld_flags}" -o ./kn-linux-ppc64le ./cmd/... || failed=1
+  echo "   🐧 kn-linux-s390x"
+  GOOS=linux GOARCH=s390x go build -mod=vendor -ldflags "${ld_flags}" -o ./kn-linux-s390x ./cmd/... || failed=1
   echo "   🍏 kn-darwin-amd64"
   GOOS=darwin GOARCH=amd64 go build -mod=vendor -ldflags "${ld_flags}" -o ./kn-darwin-amd64 ./cmd/... || failed=1
   echo "   🎠 kn-windows-amd64.exe"
