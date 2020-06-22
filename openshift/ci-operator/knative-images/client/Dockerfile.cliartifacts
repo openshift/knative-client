@@ -3,7 +3,7 @@ FROM registry.access.redhat.com/ubi8/ubi-minimal:latest
 # on OCP 3.11 where it requires it present before referencing
 RUN mkdir -p /opt/app-root/src/go/src/github.com/knative/client
 WORKDIR /opt/app-root/src/go/src/github.com/knative/client
-RUN microdnf install -y zip tar gzip python3
+RUN microdnf install -y zip tar gzip python2
 ADD package_cliartifacts.sh LICENSE kn-*-amd64* serve.py ./
 RUN bash package_cliartifacts.sh && \
     mkdir -p /usr/share/kn/{linux_amd64,macos,windows} && \
