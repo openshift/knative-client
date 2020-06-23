@@ -22,6 +22,11 @@ $ ./create-release-branch.sh v0.14.0 release-v0.14.0
 
 # Push release branch to openshift/knative-client repo
 $ git push openshift release-v0.14.0
+
+# Note: Make sure the golang version being used for CI operator build image
+# and SPEC file, the paths of the mentioned files are
+# openshift/ci-operator/build-image/Dockerfile
+# openshift-serverless-clients.spec
 ```
 
 ### Create a ci-operator configuration, prow job configurations and image mirroring config:
