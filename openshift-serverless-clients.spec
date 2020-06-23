@@ -2,7 +2,7 @@
 %global debug_package %{nil}
 %global package_name openshift-serverless-clients
 %global product_name OpenShift Serverless
-%global golang_version 1.13
+%global golang_version 1.14
 %global kn_version 0.14.0
 %global kn_release 1
 %global kn_cli_version v%{kn_version}
