@@ -79,7 +79,7 @@ build_knative_client() {
   ./hack/build.sh -x || failed=1
 
   if [[ $failed -eq 0 ]]; then
-    mv kn-linux-amd64 kn
+    mv kn-linux-$(go env GOARCH) kn
   fi
 
   return $failed

@@ -26,18 +26,20 @@ class Thread(threading.Thread):
 temp_dir = tempfile.mkdtemp()
 print(('serving from {}'.format(temp_dir)))
 os.chdir(temp_dir)
-for arch in ['amd64']:
+for arch in ['amd64','arm64','ppc64le','s390x']:
     os.mkdir(arch)
-    for operating_system in ['linux', 'macos', 'windows']:
-        os.mkdir(os.path.join(arch, operating_system))
 
 for arch, operating_system, path in [
         ('amd64', 'linux', '/usr/share/kn/linux_amd64/kn-linux-amd64.tar.gz'),
+        ('arm64', 'linux', '/usr/share/kn/linux_amd64/kn-linux-arm64.tar.gz'),
+        ('ppc64le', 'linux', '/usr/share/kn/linux_ppc64le/kn-linux-ppc64le.tar.gz'),
+        ('s390x', 'linux', '/usr/share/kn/linux_s390x/kn-linux-s390x.tar.gz'),
         ('amd64', 'macos', '/usr/share/kn/macos/kn-macos-amd64.tar.gz'),
         ('amd64', 'windows', '/usr/share/kn/windows/kn-windows-amd64.zip'),
         ]:
     basename = os.path.basename(path)
     target_path = os.path.join(arch, operating_system, basename)
+    os.mkdir(os.path.join(arch, operating_system))
     os.symlink(path, target_path)
 
 # Create socket
