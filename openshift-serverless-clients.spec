@@ -16,8 +16,6 @@ Summary:        %{product_name} client kn CLI binary
 License:        ASL 2.0
 URL:            https://github.com/openshift/knative-client/tree/release-%{kn_cli_version}
 
-ExclusiveArch:  x86_64
-
 Source0:        %{source_tar}
 BuildRequires:  golang >= %{golang_version}
 Provides:       %{package_name}
@@ -34,10 +32,13 @@ TAG=%{kn_cli_version} make build-cross
 
 %install
 mkdir -p %{buildroot}/%{_bindir}
-install -m 0755 kn-linux-amd64 %{buildroot}/%{_bindir}/kn
+install -m 0755 kn-linux-$(go env GOARCH) %{buildroot}/%{_bindir}/kn
 
 install -d %{buildroot}%{_datadir}/%{name}-redistributable/{linux,macos,windows}
 install -p -m 755 kn-linux-amd64 %{buildroot}%{_datadir}/%{name}-redistributable/linux/kn-linux-amd64
+install -p -m 755 kn-linux-arm64 %{buildroot}%{_datadir}/%{name}-redistributable/linux/kn-linux-arm64
+install -p -m 755 kn-linux-ppc64le %{buildroot}%{_datadir}/%{name}-redistributable/linux/kn-linux-ppc64le
+install -p -m 755 kn-linux-s390x %{buildroot}%{_datadir}/%{name}-redistributable/linux/kn-linux-s390x
 install -p -m 755 kn-darwin-amd64 %{buildroot}/%{_datadir}/%{name}-redistributable/macos/kn-darwin-amd64
 install -p -m 755 kn-windows-amd64.exe %{buildroot}/%{_datadir}/%{name}-redistributable/windows/kn-windows-amd64.exe
 
@@ -60,6 +61,9 @@ Obsoletes:      %{package_name} < %{kn_version}
 %dir %{_datadir}/%{name}-redistributable/macos/
 %dir %{_datadir}/%{name}-redistributable/windows/
 %{_datadir}/%{name}-redistributable/linux/kn-linux-amd64
+%{_datadir}/%{name}-redistributable/linux/kn-linux-arm64
+%{_datadir}/%{name}-redistributable/linux/kn-linux-ppc64le
+%{_datadir}/%{name}-redistributable/linux/kn-linux-s390x
 %{_datadir}/%{name}-redistributable/macos/kn-darwin-amd64
 %{_datadir}/%{name}-redistributable/windows/kn-windows-amd64.exe
 
