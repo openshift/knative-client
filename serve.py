@@ -1,6 +1,6 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
-import BaseHTTPServer, os, re, signal, SimpleHTTPServer, socket, sys, tarfile, tempfile, threading, time, zipfile
+import http.server, os, re, signal, http.server, socket, sys, tarfile, tempfile, threading, time, zipfile
 
 signal.signal(signal.SIGTERM, lambda signum, frame: sys.exit(0))
 
@@ -14,7 +14,7 @@ class Thread(threading.Thread):
         self.start()
 
     def run(self):
-        httpd = BaseHTTPServer.HTTPServer(addr, SimpleHTTPServer.SimpleHTTPRequestHandler, False)
+        httpd = http.server.HTTPServer(addr, http.server.SimpleHTTPRequestHandler, False)
 
         # Prevent the HTTP server from re-binding every handler.
         # https://stackoverflow.com/questions/46210672/
@@ -24,7 +24,7 @@ class Thread(threading.Thread):
         httpd.serve_forever()
 
 temp_dir = tempfile.mkdtemp()
-print('serving from {}'.format(temp_dir))
+print(('serving from {}'.format(temp_dir)))
 os.chdir(temp_dir)
 for arch in ['amd64']:
     os.mkdir(arch)
