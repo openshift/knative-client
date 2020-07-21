@@ -27,6 +27,8 @@ readonly E2E_TIMEOUT="60m"
 readonly OLM_NAMESPACE="openshift-marketplace"
 readonly EVENTING_CATALOGSOURCE="https://raw.githubusercontent.com/openshift/knative-eventing/master/openshift/olm/knative-eventing.catalogsource.yaml"
 readonly OPERATOR_CLONE_PATH="/tmp/serverless-operator"
+# if you want to setup the nightly serving, set `release-next` below or else set release branch
+readonly SERVING_BRANCH="release-next"
 
 env
 
@@ -40,6 +42,24 @@ function timeout() {
   return 0
 }
 
+# Waits until the given hostname resolves via DNS
+# Parameters: $1 - hostname
+function wait_until_hostname_resolves() {
+  echo -n "Waiting until hostname $1 resolves via DNS"
+  for _ in {1..150}; do  # timeout after 15 minutes
+    local output
+    output=$(host -t a "$1" | grep 'has address')
+    if [[ -n "${output}" ]]; then
+      echo -e "\n${output}"
+      return 0
+    fi
+    echo -n "."
+    sleep 6
+  done
+  echo -e "\n\nERROR: timeout waiting for hostname $1 to resolve via DNS"
+  return 1
+}
+
 function install_serverless(){
   header "Installing Serverless Operator"
   git clone https://github.com/openshift-knative/serverless-operator.git ${OPERATOR_CLONE_PATH} || return 1
@@ -49,13 +69,6 @@ function install_serverless(){
   ${OPERATOR_CLONE_PATH}/hack/install.sh || return 1
   header "Serverless Operator installed successfully"
 }
-
-function teardown_serverless(){
-  header "Tear down Serverless Operator"
-  ${OPERATOR_CLONE_PATH}/hack/teardown.sh || return 1
-  header "Serverless Operator uninstalled successfully"
-}
-
 
 function deploy_knative_operator(){
   local COMPONENT="knative-$1"
@@ -177,45 +190,6 @@ function create_knative_namespace(){
 	EOF
 }
 
-function deploy_knative_operator(){
-  local COMPONENT="knative-$1"
-  local API_GROUP=$1
-  local KIND=$2
-
-  cat <<-EOF | oc apply -f -
-	apiVersion: v1
-	kind: Namespace
-	metadata:
-	  name: ${COMPONENT}
-	EOF
-  if oc get crd operatorgroups.operators.coreos.com >/dev/null 2>&1; then
-    cat <<-EOF | oc apply -f -
-	apiVersion: operators.coreos.com/v1
-	kind: OperatorGroup
-	metadata:
-	  name: ${COMPONENT}
-	  namespace: ${COMPONENT}
-	EOF
-  fi
-  cat <<-EOF | oc apply -f -
-	apiVersion: operators.coreos.com/v1alpha1
-	kind: Subscription
-	metadata:
-	  name: ${COMPONENT}-subscription
-	  generateName: ${COMPONENT}-
-	  namespace: ${COMPONENT}
-	spec:
-	  source: ${COMPONENT}-operator
-	  sourceNamespace: $OLM_NAMESPACE
-	  name: ${COMPONENT}-operator
-	  channel: alpha
-	EOF
-
-  # # Wait until the server knows about the Install CRD before creating
-  # # an instance of it below
-  timeout 60 '[[ $(oc get crd knative${API_GROUP}s.${API_GROUP}.knative.dev -o jsonpath="{.status.acceptedNames.kind}" | grep -c $KIND) -eq 0 ]]' || return 1
-}
-
 function install_knative_eventing(){
   header "Installing Knative Eventing"
 
@@ -238,31 +212,108 @@ function install_knative_eventing(){
   #oc get pod -n knative-eventing -o yaml | grep image: | grep -v knative-eventing-operator | grep -v ${INTERNAL_REGISTRY} && return 1 || true
 }
 
-echo ">> Check resources"
-echo ">> - meminfo:"
-cat /proc/meminfo
-echo ">> - memory.limit_in_bytes"
-cat /sys/fs/cgroup/memory/memory.limit_in_bytes
-echo ">> - cpu.cfs_period_us"
-cat /sys/fs/cgroup/cpu/cpu.cfs_period_us
-echo ">> - cpu.cfs_quota_us"
-cat /sys/fs/cgroup/cpu/cpu.cfs_quota_us
+deploy_serverless_operator(){
+  local name="serverless-operator"
+  local operator_ns
+  operator_ns=$(kubectl get og --all-namespaces | grep global-operators | awk '{print $1}')
+
+  # Create configmap to use the latest manifest.
+  #oc create configmap ko-data -n $operator_ns --from-file="openshift/release/knative-serving-ci.yaml"
+
+  cat <<-EOF | oc apply -f -
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: ${name}-subscription
+  namespace: ${operator_ns}
+spec:
+  source: ${name}
+  sourceNamespace: $OLM_NAMESPACE
+  name: ${name}
+  channel: preview-4.3
+EOF
+}
+
+install_knative_serving_branch() {
+  local branch=$1
+
+  header "Installing Knative Serving from openshift/knative-serving branch $branch"
+  rm -rf /tmp/knative-serving
+  git clone --branch $branch https://github.com/openshift/knative-serving.git /tmp/knative-serving
+  pushd /tmp/knative-serving
+  # source /tmp/knative-serving/openshift/e2e-common.sh
+  # unset OPENSHIFT_BUILD_NAMESPACE
+  # install_knative || return 1
+  # header "Knative serving installed successfully"
+
+  oc new-project $SERVING_NAMESPACE
+
+  #CATALOG_URL="https://raw.githubusercontent.com/openshift/knative-serving/${branch}/openshift/olm/knative-serving.catalogsource.yaml"
+  # curl "${CATALOG_URL}" --create-dirs -o "${CATALOG_SOURCE}"
+
+  CATALOG_SOURCE="openshift/olm/knative-serving.catalogsource.yaml"
+
+  # Replace kourier's image with the latest ones from third_party/kourier-latest
+  KOURIER_CONTROL=$(grep -w "gcr.io/knative-nightly/knative.dev/net-kourier/cmd/kourier" third_party/kourier-latest/kourier.yaml  | awk '{print $NF}')
+  KOURIER_GATEWAY=$(grep -w "docker.io/maistra/proxyv2-ubi8" third_party/kourier-latest/kourier.yaml  | awk '{print $NF}')
+
+  sed -i -e "s|docker.io/maistra/proxyv2-ubi8:.*|${KOURIER_GATEWAY}|g"                                        ${CATALOG_SOURCE}
+  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:kourier|${KOURIER_CONTROL}|g"               ${CATALOG_SOURCE}
+
+  # release-next branch keeps updating the latest manifest in knative-serving-ci.yaml for serving resources.
+  # see: https://github.com/openshift/knative-serving/blob/release-next/openshift/release/knative-serving-ci.yaml
+  # So mount the manifest and use it by KO_DATA_PATH env value.
+  patch -u ${CATALOG_SOURCE} < openshift/olm/config_map.patch
+
+  oc apply -n $OLM_NAMESPACE -f ${CATALOG_SOURCE}
+  popd
+  timeout 900 '[[ $(oc get pods -n $OLM_NAMESPACE | grep -c serverless) -eq 0 ]]' || return 1
+  wait_until_pods_running $OLM_NAMESPACE
+
+  # Deploy Serverless Operator
+  deploy_serverless_operator
+
+  # Wait for the CRD to appear
+  timeout 900 '[[ $(oc get crd | grep -c knativeservings) -eq 0 ]]' || return 1
+
+  # Install Knative Serving
+  cat <<-EOF | oc apply -f -
+apiVersion: operator.knative.dev/v1alpha1
+kind: KnativeServing
+metadata:
+  name: knative-serving
+  namespace: ${SERVING_NAMESPACE}
+EOF
+
+  # Wait for 4 pods to appear first
+  timeout 900 '[[ $(oc get pods -n $SERVING_NAMESPACE --no-headers | wc -l) -lt 4 ]]' || return 1
+  wait_until_pods_running $SERVING_NAMESPACE || return 1
+
+  wait_until_service_has_external_ip $SERVING_INGRESS_NAMESPACE kourier || fail_test "Ingress has no external IP"
+  wait_until_hostname_resolves "$(kubectl get svc -n $SERVING_INGRESS_NAMESPACE kourier -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')"
+
+  header "Knative Serving installed successfully"
+}
+
+
+## Uncomment following lines if you are debugging and requiring respective info
+#echo ">> Check resources"
+#echo ">> - meminfo:"
+#cat /proc/meminfo
+#echo ">> - memory.limit_in_bytes"
+#cat /sys/fs/cgroup/memory/memory.limit_in_bytes
+#echo ">> - cpu.cfs_period_us"
+#cat /sys/fs/cgroup/cpu/cpu.cfs_period_us
+#echo ">> - cpu.cfs_quota_us"
+#cat /sys/fs/cgroup/cpu/cpu.cfs_quota_us
 
 failed=0
 
 (( !failed )) && build_knative_client || failed=1
 
-(( !failed )) && install_serverless || failed=1
+(( !failed )) && install_knative_serving_branch "${SERVING_BRANCH}" || failed=1
 
 (( !failed )) && run_e2e_tests serving || failed=1
-
-(( !failed )) && teardown_serverless || failed=1
-
-(( !failed )) && install_serverless_1_6 || failed=1
-
-(( !failed )) && install_knative_eventing || failed=1
-
-(( !failed )) && run_e2e_tests eventing || failed=1
 
 (( failed )) && exit 1
 
