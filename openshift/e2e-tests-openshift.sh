@@ -21,7 +21,10 @@ source ${ROOT_DIR}/scripts/test-infra/e2e-tests.sh
 set -x
 
 readonly KN_DEFAULT_TEST_IMAGE="gcr.io/knative-samples/helloworld-go"
-readonly SERVING_NAMESPACE="knative-serving"
+
+readonly SERVING_NAMESPACE=knative-serving
+readonly SERVING_INGRESS_NAMESPACE=knative-serving-ingress
+
 readonly EVENTING_NAMESPACE="knative-eventing"
 readonly E2E_TIMEOUT="60m"
 readonly OLM_NAMESPACE="openshift-marketplace"
@@ -271,7 +274,6 @@ install_knative_serving_branch() {
   patch -u ${CATALOG_SOURCE} < openshift/olm/config_map.patch
 
   oc apply -n $OLM_NAMESPACE -f ${CATALOG_SOURCE}
-  popd
   timeout 900 '[[ $(oc get pods -n $OLM_NAMESPACE | grep -c serverless) -eq 0 ]]' || return 1
   wait_until_pods_running $OLM_NAMESPACE
 
@@ -298,6 +300,7 @@ EOF
   wait_until_hostname_resolves "$(kubectl get svc -n $SERVING_INGRESS_NAMESPACE kourier -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')"
 
   header "Knative Serving installed successfully"
+  popd
 }
 
 
