@@ -218,7 +218,10 @@ deploy_serverless_operator(){
   operator_ns=$(kubectl get og --all-namespaces | grep global-operators | awk '{print $1}')
 
   # Create configmap to use the latest manifest.
-  #oc create configmap ko-data -n $operator_ns --from-file="openshift/release/knative-serving-ci.yaml"
+  oc create configmap ko-data -n $operator_ns --from-file="openshift/release/knative-serving-ci.yaml"
+
+  # Create configmap to use the latest kourier.
+  oc create configmap kourier-cm -n $operator_ns --from-file="third_party/kourier-latest/kourier.yaml"
 
   cat <<-EOF | oc apply -f -
 apiVersion: operators.coreos.com/v1alpha1
@@ -230,7 +233,7 @@ spec:
   source: ${name}
   sourceNamespace: $OLM_NAMESPACE
   name: ${name}
-  channel: preview-4.3
+  channel: "preview-4.6"
 EOF
 }
 
@@ -238,9 +241,9 @@ install_knative_serving_branch() {
   local branch=$1
 
   header "Installing Knative Serving from openshift/knative-serving branch $branch"
-  rm -rf /tmp/knative-serving
-  git clone --branch $branch https://github.com/openshift/knative-serving.git /tmp/knative-serving
-  pushd /tmp/knative-serving
+  #rm -rf /tmp/knative-serving
+  #git clone --branch $branch https://github.com/openshift/knative-serving.git /tmp/knative-serving
+  pushd /home/nshaikh/work/src/knative-serving
   # source /tmp/knative-serving/openshift/e2e-common.sh
   # unset OPENSHIFT_BUILD_NAMESPACE
   # install_knative || return 1
@@ -251,7 +254,9 @@ install_knative_serving_branch() {
   #CATALOG_URL="https://raw.githubusercontent.com/openshift/knative-serving/${branch}/openshift/olm/knative-serving.catalogsource.yaml"
   # curl "${CATALOG_URL}" --create-dirs -o "${CATALOG_SOURCE}"
 
+  export IMAGE_kourier="quay.io/3scale/kourier:v0.3.11"
   CATALOG_SOURCE="openshift/olm/knative-serving.catalogsource.yaml"
+  envsubst < $CATALOG_SOURCE | oc apply -n $OLM_NAMESPACE -f -
 
   # Replace kourier's image with the latest ones from third_party/kourier-latest
   KOURIER_CONTROL=$(grep -w "gcr.io/knative-nightly/knative.dev/net-kourier/cmd/kourier" third_party/kourier-latest/kourier.yaml  | awk '{print $NF}')
@@ -309,7 +314,7 @@ EOF
 
 failed=0
 
-(( !failed )) && build_knative_client || failed=1
+#(( !failed )) && build_knative_client || failed=1
 
 (( !failed )) && install_knative_serving_branch "${SERVING_BRANCH}" || failed=1
 
