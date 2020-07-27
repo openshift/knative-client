@@ -244,13 +244,11 @@ install_knative_serving_branch() {
   local branch=$1
 
   header "Installing Knative Serving from openshift/knative-serving branch $branch"
-  #rm -rf /tmp/knative-serving
-  #git clone --branch $branch https://github.com/openshift/knative-serving.git /tmp/knative-serving
-  pushd /home/nshaikh/work/src/knative-serving
+  rm -rf /tmp/knative-serving
+  git clone --branch $branch https://github.com/navidshaikh/serving.git /tmp/knative-serving
+  pushd /tmp/knative-serving
   # source /tmp/knative-serving/openshift/e2e-common.sh
   # unset OPENSHIFT_BUILD_NAMESPACE
-  # install_knative || return 1
-  # header "Knative serving installed successfully"
 
   oc new-project $SERVING_NAMESPACE
 
