@@ -21,17 +21,17 @@ source ${ROOT_DIR}/scripts/test-infra/e2e-tests.sh
 set -x
 
 readonly KN_DEFAULT_TEST_IMAGE="gcr.io/knative-samples/helloworld-go"
-
-readonly SERVING_NAMESPACE=knative-serving
-readonly SERVING_INGRESS_NAMESPACE=knative-serving-ingress
-
+readonly SERVING_NAMESPACE="knative-serving"
+readonly SERVING_INGRESS_NAMESPACE="knative-serving-ingress"
 readonly EVENTING_NAMESPACE="knative-eventing"
 readonly E2E_TIMEOUT="60m"
 readonly OLM_NAMESPACE="openshift-marketplace"
 readonly EVENTING_CATALOGSOURCE="https://raw.githubusercontent.com/openshift/knative-eventing/master/openshift/olm/knative-eventing.catalogsource.yaml"
 readonly OPERATOR_CLONE_PATH="/tmp/serverless-operator"
-# if you want to setup the nightly serving, set `release-next` below or else set release branch
+
+# if you want to setup the nightly serving/eventing, set `release-next` below or else set release branch
 readonly SERVING_BRANCH="release-next"
+readonly EVENTING_BRANCH="release-next"
 
 env
 
@@ -245,18 +245,22 @@ install_knative_serving_branch() {
 
   header "Installing Knative Serving from openshift/knative-serving branch $branch"
   rm -rf /tmp/knative-serving
-  git clone --branch $branch https://github.com/navidshaikh/serving.git /tmp/knative-serving
+  git clone --branch $branch https://github.com/openshift/knative-serving.git /tmp/knative-serving
   pushd /tmp/knative-serving
-  # source /tmp/knative-serving/openshift/e2e-common.sh
-  # unset OPENSHIFT_BUILD_NAMESPACE
 
   oc new-project $SERVING_NAMESPACE
 
-  #CATALOG_URL="https://raw.githubusercontent.com/openshift/knative-serving/${branch}/openshift/olm/knative-serving.catalogsource.yaml"
-  # curl "${CATALOG_URL}" --create-dirs -o "${CATALOG_SOURCE}"
-
   export IMAGE_kourier="quay.io/3scale/kourier:v0.3.11"
   CATALOG_SOURCE="openshift/olm/knative-serving.catalogsource.yaml"
+
+  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-serving-queue|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-serving-queue|g"                   ${CATALOG_SOURCE}
+  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-serving-activator|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-serving-activator|g"           ${CATALOG_SOURCE}
+  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-serving-autoscaler|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-serving-autoscaler|g"         ${CATALOG_SOURCE}
+  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-serving-autoscaler-hpa|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-serving-autoscaler-hpa|g" ${CATALOG_SOURCE}
+  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-serving-webhook|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-serving-webhook|g"               ${CATALOG_SOURCE}
+  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-serving-controller|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-serving-controller|g"         ${CATALOG_SOURCE}
+  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:kourier|registry.svc.ci.openshift.org/openshift/knative-nightly:kourier|g"                                               ${CATALOG_SOURCE}
+
   envsubst < $CATALOG_SOURCE | oc apply -n $OLM_NAMESPACE -f -
 
   # Replace kourier's image with the latest ones from third_party/kourier-latest
@@ -302,6 +306,20 @@ EOF
 }
 
 
+install_knative_eventing_branch() {
+  local branch=$1
+
+  header "Installing Knative Eventing from openshift/knative-eventing branch $branch"
+  # rm -rf /tmp/knative-eventing
+  # git clone --branch $branch https://github.com/navidshaikh/eventing.git /tmp/knative-eventing
+  # pushd /tmp/knative-eventing
+
+  pushd /home/nshaikh/work/src/knative-eventing
+
+  oc new-project $SERVING_NAMESPACE
+}
+
+
 ## Uncomment following lines if you are debugging and requiring respective info
 #echo ">> Check resources"
 #echo ">> - meminfo:"
@@ -320,6 +338,8 @@ failed=0
 (( !failed )) && install_knative_serving_branch "${SERVING_BRANCH}" || failed=1
 
 (( !failed )) && run_e2e_tests serving || failed=1
+
+# (( !failed )) && install_knative_eventing_branch "${EVENTING_BRANCH}" || failed=1
 
 (( failed )) && exit 1
 
