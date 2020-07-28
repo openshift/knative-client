@@ -234,7 +234,7 @@ install_knative_eventing_branch() {
 
   header "Installing Knative Eventing from openshift/knative-eventing branch $branch"
   rm -rf /tmp/knative-eventing
-  git clone --branch $branch https://github.com/navidshaikh/eventing.git /tmp/knative-eventing
+  git clone --branch $branch https://github.com/openshift/knative-eventing.git /tmp/knative-eventing
   pushd /tmp/knative-eventing/
 
   create_knative_namespace eventing
