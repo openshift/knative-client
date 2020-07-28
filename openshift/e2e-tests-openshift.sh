@@ -26,8 +26,6 @@ readonly SERVING_INGRESS_NAMESPACE="knative-serving-ingress"
 readonly EVENTING_NAMESPACE="knative-eventing"
 readonly E2E_TIMEOUT="60m"
 readonly OLM_NAMESPACE="openshift-marketplace"
-readonly EVENTING_CATALOGSOURCE="https://raw.githubusercontent.com/openshift/knative-eventing/master/openshift/olm/knative-eventing.catalogsource.yaml"
-readonly OPERATOR_CLONE_PATH="/tmp/serverless-operator"
 
 # if you want to setup the nightly serving/eventing, set `release-next` below or else set release branch
 readonly SERVING_BRANCH="release-next"
@@ -36,7 +34,7 @@ readonly EVENTING_BRANCH="release-next"
 env
 
 # Loops until duration (car) is exceeded or command (cdr) returns non-zero
-function timeout() {
+timeout() {
   SECONDS=0; TIMEOUT=$1; shift
   while eval $*; do
     sleep 5
@@ -47,7 +45,7 @@ function timeout() {
 
 # Waits until the given hostname resolves via DNS
 # Parameters: $1 - hostname
-function wait_until_hostname_resolves() {
+wait_until_hostname_resolves() {
   echo -n "Waiting until hostname $1 resolves via DNS"
   for _ in {1..150}; do  # timeout after 15 minutes
     local output
@@ -63,50 +61,7 @@ function wait_until_hostname_resolves() {
   return 1
 }
 
-function install_serverless(){
-  header "Installing Serverless Operator"
-  git clone https://github.com/openshift-knative/serverless-operator.git ${OPERATOR_CLONE_PATH} || return 1
-  # unset OPENSHIFT_BUILD_NAMESPACE as its used in serverless-operator's CI environment as a switch
-  # to use CI built images, we want pre-built images of k-s-o and k-o-i
-  unset OPENSHIFT_BUILD_NAMESPACE
-  ${OPERATOR_CLONE_PATH}/hack/install.sh || return 1
-  header "Serverless Operator installed successfully"
-}
-
-function deploy_knative_operator(){
-  local COMPONENT="knative-$1"
-  local API_GROUP=$1
-  local KIND=$2
-
-  if oc get crd operatorgroups.operators.coreos.com >/dev/null 2>&1; then
-    cat <<-EOF | oc apply -f -
-	apiVersion: operators.coreos.com/v1
-	kind: OperatorGroup
-	metadata:
-	  name: ${COMPONENT}
-	  namespace: ${COMPONENT}
-	EOF
-  fi
-  cat <<-EOF | oc apply -f -
-	apiVersion: operators.coreos.com/v1alpha1
-	kind: Subscription
-	metadata:
-	  name: ${COMPONENT}-subscription
-	  generateName: ${COMPONENT}-
-	  namespace: ${COMPONENT}
-	spec:
-	  source: ${COMPONENT}-operator
-	  sourceNamespace: $OLM_NAMESPACE
-	  name: ${COMPONENT}-operator
-	  channel: alpha
-	EOF
-
-  # # Wait until the server knows about the Install CRD before creating
-  # # an instance of it below
-  timeout 60 '[[ $(oc get crd knative${API_GROUP}s.${API_GROUP}.knative.dev -o jsonpath="{.status.acceptedNames.kind}" | grep -c $KIND) -eq 0 ]]' || return 1
-}
-
-function build_knative_client() {
+build_knative_client() {
   failed=0
   # run this cross platform build to ensure all the checks pass (as this is done while building artifacts)
   ./hack/build.sh -x || failed=1
@@ -118,7 +73,7 @@ function build_knative_client() {
   return $failed
 }
 
-function run_e2e_tests(){
+run_e2e_tests(){
   TAGS=$1
   header "Running e2e tests"
   failed=0
@@ -143,7 +98,7 @@ function run_e2e_tests(){
 
 # Waits until all pods are running in the given namespace.
 # Parameters: $1 - namespace.
-function wait_until_pods_running() {
+wait_until_pods_running() {
   echo -n "Waiting until all pods in namespace $1 are up"
   for i in {1..150}; do  # timeout after 5 minutes
     local pods="$(kubectl get pods --no-headers -n $1 2>/dev/null)"
@@ -172,17 +127,7 @@ function wait_until_pods_running() {
   return 1
 }
 
-function install_serverless_1_6(){
-  header "Installing Serverless Operator"
-  git clone --branch release-1.6 https://github.com/openshift-knative/serverless-operator.git /tmp/serverless-operator-16
-  # unset OPENSHIFT_BUILD_NAMESPACE as its used in serverless-operator's CI environment as a switch
-  # to use CI built images, we want pre-built images of k-s-o and k-o-i
-  unset OPENSHIFT_BUILD_NAMESPACE
-  /tmp/serverless-operator-16/hack/install.sh || return 1
-  header "Serverless Operator installed successfully"
-}
-
-function create_knative_namespace(){
+create_knative_namespace(){
   local COMPONENT="knative-$1"
 
   cat <<-EOF | oc apply -f -
@@ -191,28 +136,6 @@ function create_knative_namespace(){
 	metadata:
 	  name: ${COMPONENT}
 	EOF
-}
-
-function install_knative_eventing(){
-  header "Installing Knative Eventing"
-
-  create_knative_namespace eventing
-
-  # oc apply -n $OLM_NAMESPACE -f knative-eventing.catalogsource-ci.yaml
-  oc apply -n $OLM_NAMESPACE -f $EVENTING_CATALOGSOURCE
-  timeout 900 '[[ $(oc get pods -n $OLM_NAMESPACE | grep -c knative-eventing) -eq 0 ]]' || return 1
-  wait_until_pods_running $OLM_NAMESPACE
-
-  # Deploy Knative Operators Eventing
-  deploy_knative_operator eventing KnativeEventing
-
-  # Wait for 5 pods to appear first
-  timeout 900 '[[ $(oc get pods -n $EVENTING_NAMESPACE --no-headers | wc -l) -lt 5 ]]' || return 1
-  wait_until_pods_running $EVENTING_NAMESPACE || return 1
-
-  # Assert that there are no images used that are not CI images (which should all be using the $INTERNAL_REGISTRY)
-  # (except for the knative-eventing-operator)
-  #oc get pod -n knative-eventing -o yaml | grep image: | grep -v knative-eventing-operator | grep -v ${INTERNAL_REGISTRY} && return 1 || true
 }
 
 deploy_serverless_operator(){
@@ -310,13 +233,39 @@ install_knative_eventing_branch() {
   local branch=$1
 
   header "Installing Knative Eventing from openshift/knative-eventing branch $branch"
-  # rm -rf /tmp/knative-eventing
-  # git clone --branch $branch https://github.com/navidshaikh/eventing.git /tmp/knative-eventing
-  # pushd /tmp/knative-eventing
+  rm -rf /tmp/knative-eventing
+  git clone --branch $branch https://github.com/navidshaikh/eventing.git /tmp/knative-eventing
+  pushd /tmp/knative-eventing/
 
-  pushd /home/nshaikh/work/src/knative-eventing
+  create_knative_namespace eventing
 
-  oc new-project $SERVING_NAMESPACE
+  cat openshift/release/knative-eventing-ci.yaml > ci
+  cat openshift/release/knative-eventing-channelbroker-ci.yaml >> ci
+  cat openshift/release/knative-eventing-mtbroker-ci.yaml >> ci
+
+  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-controller|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-eventing-controller|g"                               ci
+  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-ping|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-eventing-ping|g"                                           ci
+  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-mtping|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-eventing-mtping|g"                                       ci
+  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-apiserver-receive-adapter|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-eventing-apiserver-receive-adapter|g" ci
+  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-webhook|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-eventing-webhook|g"                                     ci
+  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-channel-controller|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-eventing-channel-controller|g"               ci
+  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-channel-dispatcher|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-eventing-channel-dispatcher|g"               ci
+  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-channel-broker|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-eventing-channel-broker|g"                       ci
+  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-broker-ingress|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-eventing-broker-ingress|g"                       ci
+  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-broker-filter|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-eventing-broker-filter|g"                         ci
+  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-mtbroker-ingress|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-eventing-mtbroker-ingress|g"                   ci
+  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-mtbroker-filter|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-eventing-mtbroker-filter|g"                     ci
+  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-mtchannel-broker|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-eventing-mtchannel-broker|g"                   ci
+  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-sugar-controller|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-eventing-sugar-controller|g"                   ci
+
+  oc apply -f ci
+  rm ci
+
+  # Wait for 5 pods to appear first
+  timeout 900 '[[ $(oc get pods -n $EVENTING_NAMESPACE --no-headers | wc -l) -lt 5 ]]' || return 1
+  wait_until_pods_running $EVENTING_NAMESPACE || return 1
+  header "Knative Eventing installed successfully"
+  popd
 }
 
 
@@ -333,13 +282,15 @@ install_knative_eventing_branch() {
 
 failed=0
 
-#(( !failed )) && build_knative_client || failed=1
+(( !failed )) && build_knative_client || failed=1
 
 (( !failed )) && install_knative_serving_branch "${SERVING_BRANCH}" || failed=1
 
 (( !failed )) && run_e2e_tests serving || failed=1
 
-# (( !failed )) && install_knative_eventing_branch "${EVENTING_BRANCH}" || failed=1
+(( !failed )) && install_knative_eventing_branch "${EVENTING_BRANCH}" || failed=1
+
+(( !failed )) && run_e2e_tests eventing || failed=1
 
 (( failed )) && exit 1
 
