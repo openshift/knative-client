@@ -211,6 +211,7 @@ func createNamespaceWithRetry(namespace string, maxRetries int) (string, error) 
 	for retries < maxRetries {
 		out, err = Kubectl{}.Run("create", "namespace", namespace)
 		if err == nil {
+			time.Sleep(5 * time.Second)
 			return out, nil
 		}
 		retries++
