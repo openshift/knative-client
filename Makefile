@@ -16,6 +16,8 @@
 
 CGO_ENABLED=0
 GOOS=linux
+TEST_IMAGES=$(shell find ./test/test_images -mindepth 1 -maxdepth 1 -type d)
+KO_DOCKER_REPO=${DOCKER_REPO_OVERRIDE}
 
 install: build
 	cp ./kn $(GOPATH)/bin
@@ -32,6 +34,10 @@ build-cross:
 build-cross-package: build-cross
 	./package_cliartifacts.sh
 .PHONY: build-cross-package
+
+test-install:
+    go install $(TEST_IMAGES)
+.PHONY: test-install
 
 test-unit:
 	./hack/build.sh -t
