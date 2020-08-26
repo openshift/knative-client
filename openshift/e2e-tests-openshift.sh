@@ -27,6 +27,8 @@ readonly EVENTING_NAMESPACE="knative-eventing"
 readonly E2E_TIMEOUT="60m"
 readonly OLM_NAMESPACE="openshift-marketplace"
 
+readonly TEST_IMAGE_TEMPLATE="${IMAGE_FORMAT//\$\{component\}/knative-client-test-{{.Name}}}"
+
 # if you want to setup the nightly serving/eventing, set `release-next` below or else set release branch
 readonly SERVING_BRANCH="release-next"
 readonly EVENTING_BRANCH="release-next"
@@ -91,6 +93,7 @@ run_e2e_tests(){
   go test \
     ./test/e2e \
     -v -timeout=$E2E_TIMEOUT -mod=vendor \
+    --imagetemplate $TEST_IMAGE_TEMPLATE \
     -tags="e2e $TAGS" || fail_test
 
   return $failed
