@@ -28,8 +28,8 @@ readonly E2E_TIMEOUT="60m"
 readonly OLM_NAMESPACE="openshift-marketplace"
 
 # if you want to setup the nightly serving/eventing, set `release-next` below or else set release branch
-readonly SERVING_BRANCH="release-next"
-readonly EVENTING_BRANCH="release-next"
+readonly SERVING_BRANCH="release-v0.16.0"
+readonly EVENTING_BRANCH="release-v0.16.0"
 
 env
 
