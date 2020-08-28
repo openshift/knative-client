@@ -176,13 +176,13 @@ install_knative_serving_branch() {
   export IMAGE_kourier="quay.io/3scale/kourier:v0.3.11"
   CATALOG_SOURCE="openshift/olm/knative-serving.catalogsource.yaml"
 
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-serving-queue|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-serving-queue|g"                   ${CATALOG_SOURCE}
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-serving-activator|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-serving-activator|g"           ${CATALOG_SOURCE}
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-serving-autoscaler|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-serving-autoscaler|g"         ${CATALOG_SOURCE}
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-serving-autoscaler-hpa|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-serving-autoscaler-hpa|g" ${CATALOG_SOURCE}
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-serving-webhook|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-serving-webhook|g"               ${CATALOG_SOURCE}
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-serving-controller|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-serving-controller|g"         ${CATALOG_SOURCE}
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:kourier|registry.svc.ci.openshift.org/openshift/knative-nightly:kourier|g"                                               ${CATALOG_SOURCE}
+  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-serving-queue|registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-serving-queue|g"                   ${CATALOG_SOURCE}
+  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-serving-activator|registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-serving-activator|g"           ${CATALOG_SOURCE}
+  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-serving-autoscaler|registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-serving-autoscaler|g"         ${CATALOG_SOURCE}
+  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-serving-autoscaler-hpa|registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-serving-autoscaler-hpa|g" ${CATALOG_SOURCE}
+  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-serving-webhook|registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-serving-webhook|g"               ${CATALOG_SOURCE}
+  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-serving-controller|registry.svc.ci.openshift.org/openshift/knative-v0.16.0:knative-serving-controller|g"         ${CATALOG_SOURCE}
+  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:kourier|registry.svc.ci.openshift.org/openshift/knative-v0.16.0:kourier|g"                                               ${CATALOG_SOURCE}
 
   envsubst < $CATALOG_SOURCE | oc apply -n $OLM_NAMESPACE -f -
 
