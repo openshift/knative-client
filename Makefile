@@ -36,7 +36,7 @@ build-cross-package: build-cross
 .PHONY: build-cross-package
 
 test-install:
-    go install $(TEST_IMAGES)
+  go install $(TEST_IMAGES)
 .PHONY: test-install
 
 test-unit:
