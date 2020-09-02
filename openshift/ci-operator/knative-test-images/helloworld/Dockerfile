@@ -1,4 +1,5 @@
 FROM openshift/origin-base
 
-ADD helloworld /usr/bin/helloworld
-ENTRYPOINT ["/usr/bin/helloworld"]
+ADD helloworld /ko-app/helloworld
+
+ENTRYPOINT ["/ko-app/helloworld"]
