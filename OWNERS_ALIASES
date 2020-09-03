@@ -1,0 +1,13 @@
+aliases:
+  knative-client-approvers:
+  - alanfx
+  - markusthoemmes
+  - matzew
+  - rhuss
+  - navidshaikh
+  knative-client-reviewers:
+  - alanfx
+  - markusthoemmes
+  - matzew
+  - rhuss
+  - navidshaikh
