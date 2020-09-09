@@ -27,11 +27,22 @@ readonly EVENTING_NAMESPACE="knative-eventing"
 readonly E2E_TIMEOUT="60m"
 readonly OLM_NAMESPACE="openshift-marketplace"
 
-readonly TEST_IMAGE_TEMPLATE="${IMAGE_FORMAT//\$\{component\}/knative-client-test-{{.Name}}}"
-
 # if you want to setup the nightly serving/eventing, set `release-next` below or else set release branch
 readonly SERVING_BRANCH="release-next"
 readonly EVENTING_BRANCH="release-next"
+
+# Determine if we're running locally or in CI.
+if [ -n "$OPENSHIFT_BUILD_NAMESPACE" ]; then
+  readonly TEST_IMAGE_TEMPLATE="${IMAGE_FORMAT//\$\{component\}/knative-client-test-{{.Name}}}"
+elif [ -n "$DOCKER_REPO_OVERRIDE" ]; then
+  readonly TEST_IMAGE_TEMPLATE="${DOCKER_REPO_OVERRIDE}/{{.Name}}"
+elif [ -n "$BRANCH" ]; then
+  readonly TEST_IMAGE_TEMPLATE="registry.svc.ci.openshift.org/openshift/${BRANCH}:knative-client-test-{{.Name}}"
+elif [ -n "$TEMPLATE" ]; then
+  readonly TEST_IMAGE_TEMPLATE="$TEMPLATE"
+else
+  readonly TEST_IMAGE_TEMPLATE="registry.svc.ci.openshift.org/openshift/knative-nightly:knative-client-test-{{.Name}}"
+fi
 
 env
 
