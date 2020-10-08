@@ -28,8 +28,8 @@ readonly E2E_TIMEOUT="60m"
 readonly OLM_NAMESPACE="openshift-marketplace"
 
 # if you want to setup the nightly serving/eventing, set `release-next` below or else set release branch
-readonly SERVING_BRANCH="release-next"
-readonly EVENTING_BRANCH="release-next"
+readonly SERVING_BRANCH="release-v0.17.3"
+readonly EVENTING_BRANCH="release-v0.17.2"
 
 # Determine if we're running locally or in CI.
 if [ -n "$OPENSHIFT_BUILD_NAMESPACE" ]; then
@@ -194,13 +194,12 @@ install_knative_serving_branch() {
   export IMAGE_kourier="quay.io/3scale/kourier:v0.3.11"
   CATALOG_SOURCE="openshift/olm/knative-serving.catalogsource.yaml"
 
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-serving-queue|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-serving-queue|g"                   ${CATALOG_SOURCE}
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-serving-activator|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-serving-activator|g"           ${CATALOG_SOURCE}
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-serving-autoscaler|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-serving-autoscaler|g"         ${CATALOG_SOURCE}
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-serving-autoscaler-hpa|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-serving-autoscaler-hpa|g" ${CATALOG_SOURCE}
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-serving-webhook|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-serving-webhook|g"               ${CATALOG_SOURCE}
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-serving-controller|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-serving-controller|g"         ${CATALOG_SOURCE}
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:kourier|registry.svc.ci.openshift.org/openshift/knative-nightly:kourier|g"                                               ${CATALOG_SOURCE}
+  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-serving-queue|registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-queue|g"                   ${CATALOG_SOURCE}
+  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-serving-activator|registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-activator|g"           ${CATALOG_SOURCE}
+  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-serving-autoscaler|registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-autoscaler|g"         ${CATALOG_SOURCE}
+  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-serving-autoscaler-hpa|registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-autoscaler-hpa|g" ${CATALOG_SOURCE}
+  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-serving-webhook|registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-webhook|g"               ${CATALOG_SOURCE}
+  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-serving-controller|registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-controller|g"         ${CATALOG_SOURCE}
 
   envsubst < $CATALOG_SOURCE | oc apply -n $OLM_NAMESPACE -f -
 
@@ -262,23 +261,19 @@ install_knative_eventing_branch() {
   create_knative_namespace eventing
 
   cat openshift/release/knative-eventing-ci.yaml > ci
-  cat openshift/release/knative-eventing-channelbroker-ci.yaml >> ci
   cat openshift/release/knative-eventing-mtbroker-ci.yaml >> ci
 
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-controller|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-eventing-controller|g"                               ci
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-ping|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-eventing-ping|g"                                           ci
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-mtping|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-eventing-mtping|g"                                       ci
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-apiserver-receive-adapter|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-eventing-apiserver-receive-adapter|g" ci
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-webhook|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-eventing-webhook|g"                                     ci
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-channel-controller|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-eventing-channel-controller|g"               ci
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-channel-dispatcher|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-eventing-channel-dispatcher|g"               ci
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-channel-broker|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-eventing-channel-broker|g"                       ci
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-broker-ingress|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-eventing-broker-ingress|g"                       ci
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-broker-filter|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-eventing-broker-filter|g"                         ci
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-mtbroker-ingress|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-eventing-mtbroker-ingress|g"                   ci
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-mtbroker-filter|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-eventing-mtbroker-filter|g"                     ci
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-mtchannel-broker|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-eventing-mtchannel-broker|g"                   ci
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-sugar-controller|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-eventing-sugar-controller|g"                   ci
+  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-controller|registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-controller|g"                               ci
+  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-ping|registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-ping|g"                                           ci
+  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-mtping|registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-mtping|g"                                       ci
+  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-apiserver-receive-adapter|registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-apiserver-receive-adapter|g" ci
+  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-webhook|registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-webhook|g"                                     ci
+  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-channel-controller|registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-channel-controller|g"               ci
+  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-channel-dispatcher|registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-channel-dispatcher|g"               ci
+  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-mtbroker-ingress|registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-mtbroker-ingress|g"                   ci
+  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-mtbroker-filter|registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-mtbroker-filter|g"                     ci
+  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-mtchannel-broker|registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-mtchannel-broker|g"                   ci
+  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-sugar-controller|registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-sugar-controller|g"                   ci
 
   oc apply -f ci
   rm ci
