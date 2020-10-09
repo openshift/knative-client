@@ -392,9 +392,8 @@ golang.org/x/oauth2/jws
 golang.org/x/oauth2/jwt
 # golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208
 golang.org/x/sync/errgroup
-# golang.org/x/sys v0.0.0-20200930185726-fdedc70b468f
+# golang.org/x/sys v0.0.0-20200930185726-fdedc70b468f => golang.org/x/sys v0.0.0-20200302150141-5c8b2ff67527
 golang.org/x/sys/cpu
-golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
 golang.org/x/sys/windows
 # golang.org/x/text v0.3.3
@@ -1006,3 +1005,4 @@ sigs.k8s.io/yaml
 # k8s.io/code-generator => k8s.io/code-generator v0.17.6
 # github.com/docker/docker => github.com/docker/docker v1.4.2-0.20200221181110-62bd5a33f707
 # github.com/boson-project/faas => github.com/boson-project/faas v0.7.1-0.20201008163518-ec5327d5201b
+# golang.org/x/sys => golang.org/x/sys v0.0.0-20200302150141-5c8b2ff67527

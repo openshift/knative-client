@@ -36,3 +36,5 @@ replace (
 replace github.com/docker/docker => github.com/docker/docker v1.4.2-0.20200221181110-62bd5a33f707
 
 replace github.com/boson-project/faas => github.com/boson-project/faas v0.7.1-0.20201008163518-ec5327d5201b
+
+replace golang.org/x/sys => golang.org/x/sys v0.0.0-20200302150141-5c8b2ff67527
