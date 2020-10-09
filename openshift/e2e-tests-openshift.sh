@@ -263,18 +263,6 @@ install_knative_eventing_branch() {
   cat openshift/release/knative-eventing-ci.yaml > ci
   cat openshift/release/knative-eventing-mtbroker-ci.yaml >> ci
 
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-controller|registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-controller|g"                               ci
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-ping|registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-ping|g"                                           ci
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-mtping|registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-mtping|g"                                       ci
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-apiserver-receive-adapter|registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-apiserver-receive-adapter|g" ci
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-webhook|registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-webhook|g"                                     ci
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-channel-controller|registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-channel-controller|g"               ci
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-channel-dispatcher|registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-channel-dispatcher|g"               ci
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-mtbroker-ingress|registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-mtbroker-ingress|g"                   ci
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-mtbroker-filter|registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-mtbroker-filter|g"                     ci
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-mtchannel-broker|registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-mtchannel-broker|g"                   ci
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-sugar-controller|registry.svc.ci.openshift.org/openshift/knative-v0.17.2:knative-eventing-sugar-controller|g"                   ci
-
   oc apply -f ci
   rm ci
 
