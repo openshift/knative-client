@@ -24,7 +24,7 @@ install: build
 .PHONY: install
 
 build:
-	./hack/build.sh -f
+	./hack/build.sh
 .PHONY: build
 
 build-cross:
