@@ -27,7 +27,8 @@ readonly EVENTING_NAMESPACE="knative-eventing"
 readonly E2E_TIMEOUT="60m"
 readonly OLM_NAMESPACE="openshift-marketplace"
 
-# if you want to setup the nightly serving/eventing, set `release-next` below or else set release branch
+# if you want to setup the nightly serving/eventing, set `release-next` OR
+# set release branch name for example: release-v0.19.1
 readonly SERVING_BRANCH="release-next"
 readonly EVENTING_BRANCH="release-next"
 
@@ -186,7 +187,7 @@ install_knative_serving_branch() {
 
   header "Installing Knative Serving from openshift/knative-serving branch $branch"
   rm -rf /tmp/knative-serving
-  git clone --branch $branch https://github.com/openshift/knative-serving.git /tmp/knative-serving
+  git clone --branch $branch https://github.com/openshift/knative-serving.git /tmp/knative-serving || return 1
   pushd /tmp/knative-serving
 
   oc new-project $SERVING_NAMESPACE
@@ -256,7 +257,7 @@ install_knative_eventing_branch() {
 
   header "Installing Knative Eventing from openshift/knative-eventing branch $branch"
   rm -rf /tmp/knative-eventing
-  git clone --branch $branch https://github.com/openshift/knative-eventing.git /tmp/knative-eventing
+  git clone --branch $branch https://github.com/openshift/knative-eventing.git /tmp/knative-eventing || return 1
   pushd /tmp/knative-eventing/
 
   create_knative_namespace eventing
