@@ -72,6 +72,8 @@ add_files() {
   
   git add ${updated_files}
   git commit -m ":open_file_folder: Add faas as a plugin."
+  
+  popd
 }
 
 
