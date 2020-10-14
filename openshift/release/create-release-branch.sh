@@ -19,6 +19,9 @@
 release=$1
 target=$2
 
+ROOT_DIR=$(dirname "$0")/../..
+source "$ROOT_DIR/openshift/release/common.sh"
+
 # Custom files
 custom_files=$(cat <<EOT | tr '\n' ' '
 openshift
@@ -31,7 +34,6 @@ serve.py
 EOT
 )
 
-
 # Fetch the latest tags and checkout a new branch from the wanted tag.
 git fetch upstream --tags
 git checkout -b "$target" "$release"
@@ -41,3 +43,7 @@ git fetch openshift master
 git checkout openshift/master $custom_files
 git add $custom_files
 git commit -m "Add openshift specific files."
+
+# Fetch and generate required resources to enable faas as a plugin.
+# As a result two git commits are added. 
+update_faas_plugin

@@ -1,21 +1,20 @@
 #!/bin/bash
 
+ROOT_DIR=$(dirname $0)/../..
 
-readonly ROOT_DIR=$(dirname $0)/../..
+readonly FAAS_VERSION=${FAAS_VERSION:-"main"}
+readonly FAAS_REPO=${FAAS_REPO:-"github.com/boson-project/faas"}
 
-FAAS_VERSION=${1:-"main"}
-FAAS_REPO="github.com/boson-project/faas"
-
+# The vendor/ dir is omitted to be added separatelly
 UPDATED_FILES=$(cat <<EOT | tr '\n' ' '
-vendor
 pkg/kn/root/plugin_register.go
 go.mod
 go.sum
 EOT
 )
 
-
 generate_file() {
+  echo ":: Generating plugin_register.go file ::"
   local faas_repo=$1
   
   cat <<EOF > "${ROOT_DIR}/pkg/kn/root/plugin_register.go"
@@ -46,6 +45,7 @@ EOF
 }
 
 mod_replace() {
+  echo ":: Applying go.mod replacements ::"
   local faas_version=$1
   
   cat <<EOF >> "${ROOT_DIR}/go.mod"
@@ -62,26 +62,30 @@ EOF
 }
 
 mod_update() {
+  echo ":: Updating go dependencies ::"
   go mod tidy
   go mod vendor
+  
+  # Cleanup
+  find "./vendor" \( -name "OWNERS" -o -name "*_test.go" \) -print0 | xargs -0 rm -f
 }
 
 add_files() {
+  echo ":: Creating git commits ::"
   local updated_files=$1
   pushd ${ROOT_DIR}
-  
   git add ${updated_files}
-  git commit -m ":open_file_folder: Add faas as a plugin."
+  git commit -m ":space_invader: Add faas as a plugin"
+  # Create distinct commit for vendor/ dir 
+  git add vendor
+  git commit -m ":open_file_folder: Update vendor dir"
   
   popd
 }
 
-
-generate_file "${FAAS_REPO}"
-
-mod_replace "${FAAS_VERSION}"
-
-mod_update
-
-add_files "${UPDATED_FILES}"
-
+update_faas_plugin() {
+  generate_file "${FAAS_REPO}"
+  mod_replace "${FAAS_VERSION}"
+  mod_update
+  add_files "${UPDATED_FILES}"
+}
