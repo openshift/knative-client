@@ -1,4 +1,5 @@
 #!/bin/bash
+# Collection of shared functions used to generate and prepare releases.
 
 ROOT_DIR=$(dirname $0)/../..
 
@@ -13,6 +14,7 @@ go.sum
 EOT
 )
 
+# Generates plugin_register.go file to enable plugin inlining
 generate_file() {
   echo ":: Generating plugin_register.go file ::"
   local faas_repo=$1
@@ -44,6 +46,8 @@ func RegisterInlinePlugins() {}
 EOF
 }
 
+# Generates replacements needed for faas.
+# Review & adjust accordingly for every release.
 mod_replace() {
   echo ":: Applying go.mod replacements ::"
   local faas_version=$1
@@ -61,6 +65,7 @@ replace (
 EOF
 }
 
+# Updates and pulls go dependencies, same as upstreams hack/build.sh::update.
 mod_update() {
   echo ":: Updating go dependencies ::"
   go mod tidy
@@ -70,6 +75,7 @@ mod_update() {
   find "./vendor" \( -name "OWNERS" -o -name "*_test.go" \) -print0 | xargs -0 rm -f
 }
 
+# Creates new git commits with all the necessary files
 add_files() {
   echo ":: Creating git commits ::"
   local updated_files=$1
@@ -83,6 +89,7 @@ add_files() {
   popd
 }
 
+# Wrapper to execute necessary steps to update faas dependencies.
 update_faas_plugin() {
   generate_file "${FAAS_REPO}"
   mod_replace "${FAAS_VERSION}"
