@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/boson-project/faas"
 )
@@ -29,18 +30,24 @@ func (n *Runner) Run(f faas.Function) error {
 		return errors.New("please install 'docker'")
 	}
 
-	if f.Image == "" {
-		return errors.New("Function has no associated image.  Has it been built?")
+	if f.Image == "" || f.ImageWithDigest() == "" {
+		return errors.New("Function has no associated Image and Digest. Has it been built?")
 	}
 
 	// Extra arguments to docker
 	args := []string{"run", "--rm", "-t", "-p=8080:8080"}
 
+	for name, value := range f.EnvVars {
+		if !strings.HasSuffix(name,"-") {
+			args = append(args, fmt.Sprintf("-e%s=%s", name, value))
+		}
+	}
+
 	// If verbosity is enabled, pass along as an environment variable to the Function.
 	if n.Verbose {
-		args = append(args, []string{"-e VERBOSE=true"}...)
+		args = append(args, "-e VERBOSE=true")
 	}
-	args = append(args, f.Image)
+	args = append(args, f.ImageWithDigest())
 
 	// Set up the command with extra arguments and to run rooted at path
 	cmd := exec.Command("docker", args...)

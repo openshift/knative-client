@@ -1,14 +1,14 @@
 package knative
 
 import (
-	"bytes"
 	"fmt"
-	"sort"
+	"strings"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	servinglib "knative.dev/client/pkg/serving"
 	"knative.dev/client/pkg/wait"
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 	v1 "knative.dev/serving/pkg/apis/serving/v1"
@@ -27,12 +27,11 @@ type Deployer struct {
 
 func NewDeployer(namespaceOverride string) (deployer *Deployer, err error) {
 	deployer = &Deployer{}
-	_, namespace, err := newClientConfig(namespaceOverride)
+	namespace, err := GetNamespace(namespaceOverride)
 	if err != nil {
 		return
 	}
 	deployer.Namespace = namespace
-	//	deployer.client, err = servingv1client.NewForConfig(config)
 	return
 }
 
@@ -40,70 +39,56 @@ func (d *Deployer) Deploy(f faas.Function) (err error) {
 
 	// k8s does not support service names with dots. so encode it such that
 	// www.my-domain,com -> www-my--domain-com
-	encodedName, err := k8s.ToK8sAllowedName(f.Name)
+	serviceName, err := k8s.ToK8sAllowedName(f.Name)
 	if err != nil {
 		return
 	}
 
-	client, output, err := NewClient(d.Namespace, d.Verbose)
+	client, err := NewServingClient(d.Namespace)
 	if err != nil {
 		return
 	}
 
-	_, err = client.GetService(encodedName)
+	_, err = client.GetService(serviceName)
 	if err != nil {
 		if errors.IsNotFound(err) {
 
 			// Let's create a new Service
-			err := client.CreateService(generateNewService(encodedName, f.Image))
+			if d.Verbose {
+				fmt.Printf("Creating Knative Service: %v\n", serviceName)
+			}
+			err := client.CreateService(generateNewService(serviceName, f.ImageWithDigest(), f.Runtime != "quarkus"))
 			if err != nil {
-				if !d.Verbose {
-					err = fmt.Errorf("failed to deploy the service: %v.\nStdOut: %s", err, output.(*bytes.Buffer).String())
-				} else {
-					err = fmt.Errorf("failed to deploy the service: %v", err)
-				}
+				err = fmt.Errorf("knative deployer failed to deploy the service: %v", err)
 				return err
 			}
 
-			err, _ = client.WaitForService(encodedName, DefaultWaitingTimeout, wait.NoopMessageCallback())
+			if d.Verbose {
+				fmt.Println("Waiting for Knative Service to become ready")
+			}
+			err, _ = client.WaitForService(serviceName, DefaultWaitingTimeout, wait.NoopMessageCallback())
 			if err != nil {
-				if !d.Verbose {
-					err = fmt.Errorf("deployer failed to wait for the service to become ready: %v.\nStdOut: %s", err, output.(*bytes.Buffer).String())
-				} else {
-					err = fmt.Errorf("deployer failed to wait for the service to become ready: %v", err)
-				}
+				err = fmt.Errorf("knative deployer failed to wait for the service to become ready: %v", err)
 				return err
 			}
 
-			route, err := client.GetRoute(encodedName)
+			route, err := client.GetRoute(serviceName)
 			if err != nil {
-				if !d.Verbose {
-					err = fmt.Errorf("deployer failed to get the route: %v.\nStdOut: %s", err, output.(*bytes.Buffer).String())
-				} else {
-					err = fmt.Errorf("deployer failed to get the route: %v", err)
-				}
+				err = fmt.Errorf("knative deployer failed to get the route: %v", err)
 				return err
 			}
 
-			fmt.Println("Function deployed on: " + route.Status.URL.String())
+			fmt.Println("Function deployed at URL: " + route.Status.URL.String())
 
 		} else {
-			if !d.Verbose {
-				err = fmt.Errorf("deployer failed to get the service: %v.\nStdOut: %s", err, output.(*bytes.Buffer).String())
-			} else {
-				err = fmt.Errorf("deployer failed to get the service: %v", err)
-			}
+			err = fmt.Errorf("knative deployer failed to get the service: %v", err)
 			return err
 		}
 	} else {
 		// Update the existing Service
-		err = client.UpdateServiceWithRetry(encodedName, updateBuiltTimeStampEnvVar, 3)
+		err = client.UpdateServiceWithRetry(serviceName, updateService(f.ImageWithDigest(), f.EnvVars), 3)
 		if err != nil {
-			if !d.Verbose {
-				err = fmt.Errorf("deployer failed to update the service: %v.\nStdOut: %s", err, output.(*bytes.Buffer).String())
-			} else {
-				err = fmt.Errorf("deployer failed to update the service: %v", err)
-			}
+			err = fmt.Errorf("knative deployer failed to update the service: %v", err)
 			return err
 		}
 	}
@@ -111,7 +96,17 @@ func (d *Deployer) Deploy(f faas.Function) (err error) {
 	return nil
 }
 
-func generateNewService(name, image string) *servingv1.Service {
+func probeFor(url string) *corev1.Probe {
+	return &corev1.Probe{
+		Handler: corev1.Handler{
+			HTTPGet: &corev1.HTTPGetAction{
+				Path: url,
+			},
+		},
+	}
+}
+
+func generateNewService(name, image string, healthChecks bool) *servingv1.Service {
 	containers := []corev1.Container{
 		{
 			Image: image,
@@ -119,6 +114,11 @@ func generateNewService(name, image string) *servingv1.Service {
 				{Name: "VERBOSE", Value: "true"},
 			},
 		},
+	}
+
+	if healthChecks {
+		containers[0].LivenessProbe = probeFor("/health/liveness")
+		containers[0].ReadinessProbe = probeFor("/health/readiness")
 	}
 
 	return &v1.Service{
@@ -142,34 +142,32 @@ func generateNewService(name, image string) *servingv1.Service {
 	}
 }
 
-func updateBuiltTimeStampEnvVar(service *servingv1.Service) (*servingv1.Service, error) {
-	envs := service.Spec.Template.Spec.Containers[0].Env
-
-	builtEnvVarName := "BUILT"
-
-	builtEnvVar := findEnvVar(builtEnvVarName, envs)
-	if builtEnvVar == nil {
-		envs = append(envs, corev1.EnvVar{Name: "VERBOSE", Value: "true"})
-		builtEnvVar = &envs[len(envs)-1]
+func updateService(image string, envVars map[string]string) func(service *servingv1.Service) (*servingv1.Service, error) {
+	return func(service *servingv1.Service) (*servingv1.Service, error) {
+		err := servinglib.UpdateImage(&service.Spec.Template, image)
+		if err != nil {
+			return service, err
+		}
+		return updateEnvVars(service, envVars)
 	}
-
-	builtEnvVar.Value = time.Now().Format("20060102T150405")
-
-	sort.SliceStable(envs, func(i, j int) bool {
-		return envs[i].Name <= envs[j].Name
-	})
-	service.Spec.Template.Spec.Containers[0].Env = envs
-
-	return service, nil
 }
 
-func findEnvVar(name string, envs []corev1.EnvVar) *corev1.EnvVar {
-	var result *corev1.EnvVar = nil
-	for i, envVar := range envs {
-		if envVar.Name == name {
-			result = &envs[i]
-			break
+func updateEnvVars(service *servingv1.Service, envVars map[string]string) (*servingv1.Service, error) {
+	builtEnvVarName := "BUILT"
+	builtEnvVarValue := time.Now().Format("20060102T150405")
+
+	toUpdate := make(map[string]string, len(envVars)+1)
+	toRemove := make([]string, 0)
+
+	for name, value := range envVars {
+		if strings.HasSuffix(name, "-") {
+			toRemove = append(toRemove, strings.TrimSuffix(name, "-"))
+		} else {
+			toUpdate[name] = value
 		}
 	}
-	return result
+
+	toUpdate[builtEnvVarName] = builtEnvVarValue
+
+	return service, servinglib.UpdateEnvVars(&service.Spec.Template, toUpdate, toRemove)
 }
