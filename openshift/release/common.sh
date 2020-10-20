@@ -19,31 +19,14 @@ generate_file() {
   echo ":: Generating plugin_register.go file ::"
   local faas_repo=$1
   
-  cat <<EOF > "${ROOT_DIR}/pkg/kn/root/plugin_register.go"
-// Copyright © 2020 The Knative Authors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-package root
-
-import (
-	_ "${faas_repo}/plugin"
-)
-
-// RegisterInlinePlugins is an empty function which however forces the
-// compiler to run all init() methods of the registered imports
-func RegisterInlinePlugins() {}
-EOF
+  cp ${ROOT_DIR}/openshift/release/plugin_register.go ${ROOT_DIR}/pkg/kn/root/plugin_register.go
+  
+  # Add new import after placeholder comment containing #plugin#.
+  # The `sed` append can be repeated for additional plugins.
+  sed -i "/#plugins#/a _ \"${faas_repo}/plugin\"" ${ROOT_DIR}/pkg/kn/root/plugin_register.go
+  
+  # Format the file accordingly
+  gofmt -w -s ${ROOT_DIR}/pkg/kn/root/plugin_register.go
 }
 
 # Generates replacements needed for faas.
