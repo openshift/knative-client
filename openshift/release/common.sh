@@ -6,7 +6,7 @@ ROOT_DIR=$(dirname $0)/../..
 readonly FAAS_VERSION=${FAAS_VERSION:-"main"}
 readonly FAAS_REPO=${FAAS_REPO:-"github.com/boson-project/faas"}
 
-# The vendor/ dir is omitted to be added separatelly
+# The vendor/ dir is omitted to be added separately
 UPDATED_FILES=$(cat <<EOT | tr '\n' ' '
 pkg/kn/root/plugin_register.go
 go.mod
