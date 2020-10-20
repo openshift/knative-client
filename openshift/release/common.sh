@@ -77,7 +77,7 @@ mod_update() {
 
 # Creates new git commits with all the necessary files
 add_files() {
-  echo ":: Creating git commits ::"
+  echo ":: Adding faas as a plugin ::"
   local updated_files=$1
   pushd ${ROOT_DIR}
   git add ${updated_files}
