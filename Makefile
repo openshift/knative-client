@@ -42,7 +42,7 @@ test-install:
 
 test-images:
 	for img in $(TEST_IMAGES); do \
-		KO_DOCKER_REPO=$(DOCKER_REPO_OVERRIDE) ko resolve --tags=latest -RBf $$img ; \
+		KO_DOCKER_REPO=$(DOCKER_REPO_OVERRIDE) ko resolve --tags=latest -RBf $$img/ ; \
 	done
 .PHONY: test-images
 
