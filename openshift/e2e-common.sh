@@ -107,7 +107,7 @@ run_e2e_tests(){
     run_append="-run ^(${test_name})$"
   fi
   if [ -n "${tags}" ]; then
-    run_append="${run_append} -tags e2e ${tags}"
+    run_append="${run_append} -tags e2e,${tags}"
   else
     run_append="${run_append} -tags e2e"
   fi
