@@ -27,8 +27,8 @@ readonly OLM_NAMESPACE="openshift-marketplace"
 
 # if you want to setup the nightly serving/eventing, set `release-next` OR
 # set release branch name for example: release-v0.19.1
-readonly SERVING_BRANCH="v0.17.3"
-readonly EVENTING_BRANCH="v0.17.2"
+readonly SERVING_BRANCH="release-v0.17.3"
+readonly EVENTING_BRANCH="release-v0.17.2"
 
 # Determine if we're running locally or in CI.
 if [ -n "$OPENSHIFT_BUILD_NAMESPACE" ]; then
