@@ -12,13 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package root
+package source
 
 import (
-	_ "github.com/boson-project/faas/plugin"
-	_ "knative.dev/client-contrib/plugins/source-kafka/plugin"
+	"github.com/maximilien/kn-source-pkg/pkg/types"
+	"github.com/spf13/cobra"
 )
 
-// RegisterInlinePlugins is an empty function which however forces the
-// compiler to run all init() methods of the registered imports
-func RegisterInlinePlugins() {}
+// NewCreateCommand for creating event sources
+func NewCreateCommand(params *types.KnSourceParams) *cobra.Command {
+	createCmd := &cobra.Command{
+		Use:     "create NAME [flags]",
+		Short:   "create {{.Name}} source",
+		Example: "{{.CreateExample}}",
+	}
+	return createCmd
+}

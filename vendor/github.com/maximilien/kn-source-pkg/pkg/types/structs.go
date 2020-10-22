@@ -11,14 +11,27 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
 
-package root
+package types
 
 import (
-	_ "github.com/boson-project/faas/plugin"
-	_ "knative.dev/client-contrib/plugins/source-kafka/plugin"
+	"github.com/spf13/cobra"
+	"knative.dev/client/pkg/kn/commands"
+	"knative.dev/client/pkg/kn/commands/flags"
 )
 
-// RegisterInlinePlugins is an empty function which however forces the
-// compiler to run all init() methods of the registered imports
-func RegisterInlinePlugins() {}
+type KnSourceParams struct {
+	commands.KnParams
+
+	SinkFlag flags.SinkFlags
+}
+
+func (p *KnSourceParams) AddCommonFlags(cmd *cobra.Command) {
+	commands.AddNamespaceFlags(cmd.Flags(), true)
+}
+
+func (p *KnSourceParams) AddCreateUpdateFlags(cmd *cobra.Command) {
+	p.SinkFlag.Add(cmd)
+}

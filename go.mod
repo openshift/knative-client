@@ -16,6 +16,7 @@ require (
 	k8s.io/cli-runtime v0.17.6
 	k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible
 	k8s.io/code-generator v0.18.6
+	knative.dev/client-contrib/plugins/source-kafka v0.0.0-20201022153314-e9a483f1b41c
 	knative.dev/eventing v0.17.5
 	knative.dev/pkg v0.0.0-20200831162708-14fb2347fb77
 	knative.dev/serving v0.17.3
@@ -41,4 +42,6 @@ replace (
 	github.com/docker/docker => github.com/docker/docker v1.4.2-0.20200221181110-62bd5a33f707
 	// Darwin cross-build required version
 	golang.org/x/sys => golang.org/x/sys v0.0.0-20200302150141-5c8b2ff67527
+
+	knative.dev/client-contrib/plugins/source-kafka => github.com/dsimansk/kn-source-kafka v0.0.0-20201022153314-e9a483f1b41c
 )

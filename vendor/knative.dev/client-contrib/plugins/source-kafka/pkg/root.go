@@ -12,13 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package root
+package pkg
 
 import (
-	_ "github.com/boson-project/faas/plugin"
-	_ "knative.dev/client-contrib/plugins/source-kafka/plugin"
+	"github.com/maximilien/kn-source-pkg/pkg/core"
+	"github.com/spf13/cobra"
+	"knative.dev/client-contrib/plugins/source-kafka/pkg/factories"
 )
 
-// RegisterInlinePlugins is an empty function which however forces the
-// compiler to run all init() methods of the registered imports
-func RegisterInlinePlugins() {}
+func NewSourceKafkaCommand() *cobra.Command {
+	kafkaSourceFactory := factories.NewKafkaSourceFactory()
+
+	kafkaCommandFactory := factories.NewKafkaSourceCommandFactory(kafkaSourceFactory)
+	kafkaFlagsFactory := factories.NewKafkaSourceFlagsFactory(kafkaSourceFactory)
+	kafkaRunEFactory := factories.NewKafkaSourceRunEFactory(kafkaSourceFactory)
+
+	return core.NewKnSourceCommand(kafkaSourceFactory, kafkaCommandFactory, kafkaFlagsFactory, kafkaRunEFactory)
+}
