@@ -15,7 +15,7 @@
 package root
 
 import (
-	// Add #plugins# import here
+	// Add #plugins# import here. Don't remove this line, it triggers an automatic replacement.
 )
 
 // RegisterInlinePlugins is an empty function which however forces the
