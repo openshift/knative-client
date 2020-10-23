@@ -303,10 +303,25 @@ install_strimzi() {
   header "Waiting for Strimzi to become ready"
   oc wait deployment --all --timeout=-1s --for=condition=Available -n kafka
   header "Strimzi installed successfully"
-  popd
+
+  header "Applying Strimzi Topic CR"
+  cat <<-EOF | oc apply -f -
+apiVersion: kafka.strimzi.io/v1beta1
+kind: KafkaTopic
+metadata:
+  name: test-topic
+  labels:
+    strimzi.io/cluster: my-cluster
+spec:
+  partitions: 100
+  replicas: 1
+EOF
+
 }
 
-function install_knative_kafka(){
+install_knative_kafka(){
+  local branch=$1
+
   header "Installing Knative Kafka components"
   rm -rf /tmp/knative-eventing-contrib
   git clone --branch $branch https://github.com/openshift/knative-eventing-contrib.git /tmp/knative-eventing-contrib || return 1
@@ -321,7 +336,6 @@ function install_knative_kafka(){
 
   wait_until_pods_running $EVENTING_NAMESPACE || return 1
   header "Knative Eventing Kafka components installed successfully"
-  popd
 }
 
 
