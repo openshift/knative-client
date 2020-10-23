@@ -29,6 +29,7 @@ readonly OLM_NAMESPACE="openshift-marketplace"
 # set release branch name for example: release-v0.19.1
 readonly SERVING_BRANCH="release-v0.17.3"
 readonly EVENTING_BRANCH="release-v0.17.2"
+readonly EVENTING_CONTRIB_BRANCH="release-v0.17.1"
 
 # Determine if we're running locally or in CI.
 if [ -n "$OPENSHIFT_BUILD_NAMESPACE" ]; then
@@ -281,6 +282,45 @@ install_knative_eventing_branch() {
   timeout 900 '[[ $(oc get pods -n $EVENTING_NAMESPACE --no-headers | wc -l) -lt 5 ]]' || return 1
   wait_until_pods_running $EVENTING_NAMESPACE || return 1
   header "Knative Eventing installed successfully"
+  popd
+}
+
+install_strimzi() {
+  strimzi_version=`curl https://github.com/strimzi/strimzi-kafka-operator/releases/latest |  awk -F 'tag/' '{print $2}' | awk -F '"' '{print $1}' 2>/dev/null`
+  header "Strimzi install"
+  oc create namespace kafka
+  oc -n kafka apply --selector strimzi.io/crd-install=true -f "https://github.com/strimzi/strimzi-kafka-operator/releases/download/${strimzi_version}/strimzi-cluster-operator-${strimzi_version}.yaml"
+  curl -L "https://github.com/strimzi/strimzi-kafka-operator/releases/download/${strimzi_version}/strimzi-cluster-operator-${strimzi_version}.yaml" \
+  | sed 's/namespace: .*/namespace: kafka/' \
+  | oc -n kafka apply -f -
+
+  # Wait for the CRD we need to actually be active
+  oc wait crd --timeout=-1s kafkas.kafka.strimzi.io --for=condition=Established
+
+  header "Applying Strimzi Cluster file"
+  oc -n kafka apply -f "https://raw.githubusercontent.com/strimzi/strimzi-kafka-operator/${strimzi_version}/examples/kafka/kafka-persistent.yaml"
+
+  header "Waiting for Strimzi to become ready"
+  oc wait deployment --all --timeout=-1s --for=condition=Available -n kafka
+  header "Strimzi installed successfully"
+  popd
+}
+
+function install_knative_kafka(){
+  header "Installing Knative Kafka components"
+  rm -rf /tmp/knative-eventing-contrib
+  git clone --branch $branch https://github.com/openshift/knative-eventing-contrib.git /tmp/knative-eventing-contrib || return 1
+  pushd /tmp/knative-eventing-contrib
+
+  RELEASE_YAML="openshift/release/knative-eventing-kafka-contrib-ci.yaml"
+
+  cat ${RELEASE_YAML} \
+  | sed 's/namespace: .*/namespace: knative-eventing/' \
+  | sed 's/REPLACE_WITH_CLUSTER_URL/my-cluster-kafka-bootstrap.kafka:9092/' \
+  | oc apply --filename -
+
+  wait_until_pods_running $EVENTING_NAMESPACE || return 1
+  header "Knative Eventing Kafka components installed successfully"
   popd
 }
 
