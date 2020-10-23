@@ -317,6 +317,7 @@ spec:
   replicas: 1
 EOF
 
+  popd
 }
 
 install_knative_kafka(){
@@ -336,6 +337,8 @@ install_knative_kafka(){
 
   wait_until_pods_running $EVENTING_NAMESPACE || return 1
   header "Knative Eventing Kafka components installed successfully"
+
+  popd
 }
 
 
