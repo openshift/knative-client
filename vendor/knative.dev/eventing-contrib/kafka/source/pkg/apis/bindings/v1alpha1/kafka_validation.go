@@ -19,16 +19,10 @@ package v1alpha1
 import (
 	"context"
 
-	"github.com/google/uuid"
+	"knative.dev/pkg/apis"
 )
 
-const (
-	uuidPrefix = "knative-kafka-source-"
-)
-
-// SetDefaults ensures KafkaSource reflects the default values.
-func (k *KafkaSource) SetDefaults(ctx context.Context) {
-	if k != nil && k.Spec.ConsumerGroup == "" {
-		k.Spec.ConsumerGroup = uuidPrefix + uuid.New().String()
-	}
+// Validate ensures KafkaBinding is properly configured.
+func (r *KafkaBinding) Validate(ctx context.Context) *apis.FieldError {
+	return nil
 }

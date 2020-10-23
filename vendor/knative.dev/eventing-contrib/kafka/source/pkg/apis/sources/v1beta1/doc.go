@@ -14,21 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha1
-
-import (
-	"context"
-
-	"github.com/google/uuid"
-)
-
-const (
-	uuidPrefix = "knative-kafka-source-"
-)
-
-// SetDefaults ensures KafkaSource reflects the default values.
-func (k *KafkaSource) SetDefaults(ctx context.Context) {
-	if k != nil && k.Spec.ConsumerGroup == "" {
-		k.Spec.ConsumerGroup = uuidPrefix + uuid.New().String()
-	}
-}
+// Package v1beta1 contains API Schema definitions for the sources v1beta1 API group
+// +k8s:openapi-gen=true
+// +k8s:deepcopy-gen=package,register
+// +k8s:defaulter-gen=TypeMeta
+// +groupName=sources.knative.dev
+package v1beta1

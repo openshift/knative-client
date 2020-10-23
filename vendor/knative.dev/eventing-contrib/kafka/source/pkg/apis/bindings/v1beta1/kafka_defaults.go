@@ -14,21 +14,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha1
+package v1beta1
 
 import (
 	"context"
-
-	"github.com/google/uuid"
 )
 
-const (
-	uuidPrefix = "knative-kafka-source-"
-)
-
-// SetDefaults ensures KafkaSource reflects the default values.
-func (k *KafkaSource) SetDefaults(ctx context.Context) {
-	if k != nil && k.Spec.ConsumerGroup == "" {
-		k.Spec.ConsumerGroup = uuidPrefix + uuid.New().String()
+// SetDefaults ensures KafkaBinding reflects the default values.
+func (r *KafkaBinding) SetDefaults(ctx context.Context) {
+	if r.Spec.Subject.Namespace == "" {
+		// Default the subject's namespace to our namespace.
+		r.Spec.Subject.Namespace = r.Namespace
 	}
 }

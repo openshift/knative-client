@@ -4,6 +4,7 @@ go 1.14
 
 require (
 	github.com/boson-project/faas v0.0.0-00010101000000-000000000000
+	github.com/maximilien/kn-source-pkg v0.5.0
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.0.1-0.20201006035406-b97b5ead31f7
@@ -43,5 +44,5 @@ replace (
 	// Darwin cross-build required version
 	golang.org/x/sys => golang.org/x/sys v0.0.0-20200302150141-5c8b2ff67527
 
-	knative.dev/client-contrib/plugins/source-kafka => github.com/dsimansk/kn-source-kafka v0.0.0-20201022153314-e9a483f1b41c
+	knative.dev/client-contrib/plugins/source-kafka => github.com/dsimansk/kn-source-kafka v0.0.0-20201023115912-713734891b79
 )

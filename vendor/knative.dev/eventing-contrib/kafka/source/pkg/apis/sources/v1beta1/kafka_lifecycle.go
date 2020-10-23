@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Knative Authors
+Copyright 2020 The Knative Authors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha1
+package v1beta1
 
 import (
 	appsv1 "k8s.io/api/apps/v1"
@@ -32,9 +32,9 @@ const (
 	// KafkaConditionDeployed has status True when the KafkaSource has had it's receive adapter deployment created.
 	KafkaConditionDeployed apis.ConditionType = "Deployed"
 
-	// KafkaConditionResources is True when the resources listed for the KafkaSource have been properly
-	// parsed and match specified syntax for resource quantities
-	KafkaConditionResources apis.ConditionType = "ResourcesCorrect"
+	// KafkaConditionKeyType is True when the KafkaSource has been configured with valid key type for
+	// the key deserializer.
+	KafkaConditionKeyType apis.ConditionType = "KeyTypeCorrect"
 )
 
 var KafkaSourceCondSet = apis.NewLivingConditionSet(
@@ -106,10 +106,10 @@ func (s *KafkaSourceStatus) MarkNotDeployed(reason, messageFormat string, messag
 	KafkaSourceCondSet.Manage(s).MarkFalse(KafkaConditionDeployed, reason, messageFormat, messageA...)
 }
 
-func (s *KafkaSourceStatus) MarkResourcesCorrect() {
-	KafkaSourceCondSet.Manage(s).MarkTrue(KafkaConditionResources)
+func (s *KafkaSourceStatus) MarkKeyTypeCorrect() {
+	KafkaSourceCondSet.Manage(s).MarkTrue(KafkaConditionKeyType)
 }
 
-func (s *KafkaSourceStatus) MarkResourcesIncorrect(reason, messageFormat string, messageA ...interface{}) {
-	KafkaSourceCondSet.Manage(s).MarkFalse(KafkaConditionResources, reason, messageFormat, messageA...)
+func (s *KafkaSourceStatus) MarkKeyTypeIncorrect(reason, messageFormat string, messageA ...interface{}) {
+	KafkaSourceCondSet.Manage(s).MarkFalse(KafkaConditionKeyType, reason, messageFormat, messageA...)
 }

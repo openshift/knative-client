@@ -14,21 +14,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha1
+// Package bindings contains bindings API versions
+package bindings
 
-import (
-	"context"
-
-	"github.com/google/uuid"
-)
+import "k8s.io/apimachinery/pkg/runtime/schema"
 
 const (
-	uuidPrefix = "knative-kafka-source-"
+	// TODO(mattmoor): Consider creating this under knative.dev/pkg/apis/bindings?
+	GroupName = "bindings.knative.dev"
 )
 
-// SetDefaults ensures KafkaSource reflects the default values.
-func (k *KafkaSource) SetDefaults(ctx context.Context) {
-	if k != nil && k.Spec.ConsumerGroup == "" {
-		k.Spec.ConsumerGroup = uuidPrefix + uuid.New().String()
+var (
+	// KafkaBindingsResource represents a KafkaBinding
+	KafkaBindingsResource = schema.GroupResource{
+		Group:    GroupName,
+		Resource: "kafkabindings",
 	}
-}
+)

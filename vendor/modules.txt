@@ -192,6 +192,8 @@ github.com/google/go-containerregistry/pkg/v1/types
 github.com/google/go-containerregistry/pkg/v1/v1util
 # github.com/google/gofuzz v1.1.0
 github.com/google/gofuzz
+# github.com/google/uuid v1.1.2
+github.com/google/uuid
 # github.com/googleapis/gnostic v0.4.0
 github.com/googleapis/gnostic/OpenAPIv2
 github.com/googleapis/gnostic/compiler
@@ -248,12 +250,14 @@ github.com/mattn/go-colorable
 # github.com/mattn/go-isatty v0.0.12
 github.com/mattn/go-isatty
 # github.com/maximilien/kn-source-pkg v0.5.0
+## explicit
 github.com/maximilien/kn-source-pkg/pkg/client
 github.com/maximilien/kn-source-pkg/pkg/commands/source
 github.com/maximilien/kn-source-pkg/pkg/core
 github.com/maximilien/kn-source-pkg/pkg/factories
 github.com/maximilien/kn-source-pkg/pkg/types
 github.com/maximilien/kn-source-pkg/pkg/types/typesfakes
+github.com/maximilien/kn-source-pkg/test/e2e
 # github.com/mitchellh/go-homedir v1.1.0
 ## explicit
 github.com/mitchellh/go-homedir
@@ -329,7 +333,7 @@ github.com/src-d/gcfg/types
 github.com/subosito/gotenv
 # github.com/xanzy/ssh-agent v0.2.1
 github.com/xanzy/ssh-agent
-# go.opencensus.io v0.22.4
+# go.opencensus.io v0.22.5-0.20200716030834-3456e1d174b2
 go.opencensus.io
 go.opencensus.io/internal
 go.opencensus.io/internal/tagencoding
@@ -905,7 +909,7 @@ k8s.io/kube-openapi/pkg/util/sets
 k8s.io/utils/buffer
 k8s.io/utils/integer
 k8s.io/utils/trace
-# knative.dev/client-contrib/plugins/source-kafka v0.0.0-20201022153314-e9a483f1b41c => github.com/dsimansk/kn-source-kafka v0.0.0-20201022153314-e9a483f1b41c
+# knative.dev/client-contrib/plugins/source-kafka v0.0.0-20201022153314-e9a483f1b41c => github.com/dsimansk/kn-source-kafka v0.0.0-20201023115912-713734891b79
 ## explicit
 knative.dev/client-contrib/plugins/source-kafka/pkg
 knative.dev/client-contrib/plugins/source-kafka/pkg/client
@@ -941,8 +945,12 @@ knative.dev/eventing/pkg/client/clientset/versioned/typed/messaging/v1beta1
 knative.dev/eventing/pkg/client/clientset/versioned/typed/sources/v1alpha2
 knative.dev/eventing/pkg/client/clientset/versioned/typed/sources/v1alpha2/fake
 knative.dev/eventing/pkg/logging
-# knative.dev/eventing-contrib v0.14.0
+# knative.dev/eventing-contrib v0.17.1
+knative.dev/eventing-contrib/kafka/source/pkg/apis/bindings
+knative.dev/eventing-contrib/kafka/source/pkg/apis/bindings/v1alpha1
+knative.dev/eventing-contrib/kafka/source/pkg/apis/bindings/v1beta1
 knative.dev/eventing-contrib/kafka/source/pkg/apis/sources/v1alpha1
+knative.dev/eventing-contrib/kafka/source/pkg/apis/sources/v1beta1
 knative.dev/eventing-contrib/kafka/source/pkg/client/clientset/versioned/scheme
 knative.dev/eventing-contrib/kafka/source/pkg/client/clientset/versioned/typed/sources/v1alpha1
 knative.dev/eventing-contrib/kafka/source/pkg/client/clientset/versioned/typed/sources/v1alpha1/fake
@@ -1025,4 +1033,4 @@ sigs.k8s.io/yaml
 # github.com/boson-project/faas => github.com/boson-project/faas v0.8.0
 # github.com/docker/docker => github.com/docker/docker v1.4.2-0.20200221181110-62bd5a33f707
 # golang.org/x/sys => golang.org/x/sys v0.0.0-20200302150141-5c8b2ff67527
-# knative.dev/client-contrib/plugins/source-kafka => github.com/dsimansk/kn-source-kafka v0.0.0-20201022153314-e9a483f1b41c
+# knative.dev/client-contrib/plugins/source-kafka => github.com/dsimansk/kn-source-kafka v0.0.0-20201023115912-713734891b79

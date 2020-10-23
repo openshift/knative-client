@@ -119,13 +119,13 @@ func NewKafkaSourceBuilderFromExisting(kSource *v1alpha1.KafkaSource) *KafkaSour
 
 // BootstrapServers to set the value of BootstrapServers
 func (b *KafkaSourceBuilder) BootstrapServers(server string) *KafkaSourceBuilder {
-	b.kafkaSource.Spec.BootstrapServers = server
+	b.kafkaSource.Spec.BootstrapServers = []string{server}
 	return b
 }
 
 // Topics to set the value of Topics
 func (b *KafkaSourceBuilder) Topics(topics string) *KafkaSourceBuilder {
-	b.kafkaSource.Spec.Topics = topics
+	b.kafkaSource.Spec.Topics = []string{topics}
 	return b
 }
 
