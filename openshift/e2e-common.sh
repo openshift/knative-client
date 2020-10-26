@@ -316,8 +316,6 @@ spec:
   partitions: 100
   replicas: 1
 EOF
-
-  popd
 }
 
 install_knative_kafka(){
