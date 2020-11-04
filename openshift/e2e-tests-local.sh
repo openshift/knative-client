@@ -7,7 +7,7 @@ set +x
 
 failed=0
 
-(( !failed )) && run_e2e_tests "" "${TEST}" || failed=1
+(( !failed )) && run_client_e2e_tests "" "${TEST}" || failed=1
 (( failed )) && exit 1
 
 success

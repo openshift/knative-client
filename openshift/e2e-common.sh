@@ -15,8 +15,8 @@
 # limitations under the License.
 
 readonly ROOT_DIR=$(dirname $0)/..
-source ${ROOT_DIR}/scripts/test-infra/library.sh
-source ${ROOT_DIR}/scripts/test-infra/e2e-tests.sh
+source ${ROOT_DIR}/vendor/knative.dev/hack/library.sh
+source ${ROOT_DIR}/vendor/knative.dev/hack/e2e-tests.sh
 
 readonly KN_DEFAULT_TEST_IMAGE="gcr.io/knative-samples/helloworld-go"
 readonly SERVING_NAMESPACE="knative-serving"
@@ -85,13 +85,14 @@ build_knative_client() {
   return $failed
 }
 
+run_client_e2e_tests(){
 run_unit_tests() {
   failed=0
   go test -v ./... || failed=1
   return $failed
 }
 
-run_e2e_tests(){
+run_client_e2e_tests(){
   local tags=$1
   local test_name=$2
 
@@ -206,64 +207,15 @@ install_knative_serving_branch() {
   git clone --branch $branch https://github.com/openshift/knative-serving.git /tmp/knative-serving || return 1
   pushd /tmp/knative-serving
 
-  oc new-project $SERVING_NAMESPACE
+  local current_image_format=$IMAGE_FORMAT
+  export IMAGE_FORMAT='registry.svc.ci.openshift.org/openshift/knative-nightly:${component}'
 
-  export IMAGE_kourier="quay.io/3scale/kourier:v0.3.11"
-  CATALOG_SOURCE="openshift/olm/knative-serving.catalogsource.yaml"
+  source "openshift/e2e-common.sh"
 
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-serving-queue|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-serving-queue|g"                   ${CATALOG_SOURCE}
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-serving-activator|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-serving-activator|g"           ${CATALOG_SOURCE}
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-serving-autoscaler|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-serving-autoscaler|g"         ${CATALOG_SOURCE}
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-serving-autoscaler-hpa|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-serving-autoscaler-hpa|g" ${CATALOG_SOURCE}
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-serving-webhook|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-serving-webhook|g"               ${CATALOG_SOURCE}
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-serving-controller|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-serving-controller|g"         ${CATALOG_SOURCE}
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:kourier|registry.svc.ci.openshift.org/openshift/knative-nightly:kourier|g"                                               ${CATALOG_SOURCE}
+  install_knative
 
-  envsubst < $CATALOG_SOURCE | oc apply -n $OLM_NAMESPACE -f -
+  export IMAGE_FORMAT=$current_image_format
 
-  # Replace kourier's image with the latest ones from third_party/kourier-latest
-  KOURIER_CONTROL=$(grep -w "gcr.io/knative-nightly/knative.dev/net-kourier/cmd/kourier" third_party/kourier-latest/kourier.yaml  | awk '{print $NF}')
-  KOURIER_GATEWAY=$(grep -w "docker.io/maistra/proxyv2-ubi8" third_party/kourier-latest/kourier.yaml  | awk '{print $NF}')
-
-  # TODO: Adding env variable manually until operator implments it. See SRVKS-610
-  sed -i -e 's/value: "kourier-system"/value: "knative-serving-ingress"/g'  third_party/kourier-latest/kourier.yaml
-  sed -i -e 's/kourier-control.knative-serving/kourier-control.knative-serving-ingress/g'  third_party/kourier-latest/kourier.yaml
-
-  sed -i -e "s|docker.io/maistra/proxyv2-ubi8:.*|${KOURIER_GATEWAY}|g"                                        ${CATALOG_SOURCE}
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:kourier|${KOURIER_CONTROL}|g"               ${CATALOG_SOURCE}
-
-  # release-next branch keeps updating the latest manifest in knative-serving-ci.yaml for serving resources.
-  # see: https://github.com/openshift/knative-serving/blob/release-next/openshift/release/knative-serving-ci.yaml
-  # So mount the manifest and use it by KO_DATA_PATH env value.
-  patch -u ${CATALOG_SOURCE} < openshift/olm/config_map.patch
-
-  oc apply -n $OLM_NAMESPACE -f ${CATALOG_SOURCE}
-  timeout 600 '[[ $(oc get pods -n $OLM_NAMESPACE | grep -c serverless) -eq 0 ]]' || return 1
-  wait_until_pods_running $OLM_NAMESPACE
-
-  # Deploy Serverless Operator
-  deploy_serverless_operator
-
-  # Wait for the CRD to appear
-  timeout 600 '[[ $(oc get crd | grep -c knativeservings) -eq 0 ]]' || return 1
-
-  # Install Knative Serving
-  cat <<-EOF | oc apply -f -
-apiVersion: operator.knative.dev/v1alpha1
-kind: KnativeServing
-metadata:
-  name: knative-serving
-  namespace: ${SERVING_NAMESPACE}
-EOF
-
-  # Wait for 4 pods to appear first
-  timeout 600 '[[ $(oc get pods -n $SERVING_NAMESPACE --no-headers | wc -l) -lt 4 ]]' || return 1
-  wait_until_pods_running $SERVING_NAMESPACE || return 1
-
-  wait_until_service_has_external_ip $SERVING_INGRESS_NAMESPACE kourier || fail_test "Ingress has no external IP"
-  wait_until_hostname_resolves "$(kubectl get svc -n $SERVING_INGRESS_NAMESPACE kourier -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')"
-
-  header "Knative Serving installed successfully"
   popd
 }
 
