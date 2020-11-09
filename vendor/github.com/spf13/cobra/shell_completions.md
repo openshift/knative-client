@@ -33,15 +33,10 @@ MacOS:
 
 Zsh:
 
-# If shell completion is not already enabled in your environment you will need
-# to enable it.  You can execute the following once:
-
-$ echo "autoload -U compinit; compinit" >> ~/.zshrc
+$ source <(yourprogram completion zsh)
 
 # To load completions for each session, execute once:
 $ yourprogram completion zsh > "${fpath[1]}/_yourprogram"
-
-# You will need to start a new shell for this setup to take effect.
 
 Fish:
 
@@ -368,7 +363,7 @@ Please refer to [Bash Completions](bash_completions.md) for details.
 
 Cobra supports native Zsh completion generated from the root `cobra.Command`.
 The generated completion script should be put somewhere in your `$fpath` and be named
-`_<yourProgram>`.  You will need to start a new shell for the completions to become available.
+`_<yourProgram>`.
 
 Zsh supports descriptions for completions. Cobra will provide the description automatically,
 based on usage information. Cobra provides a way to completely disable such descriptions by

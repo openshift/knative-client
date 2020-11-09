@@ -9,7 +9,6 @@ name a few. [This list](./projects_using_cobra.md) contains a more extensive lis
 [![Build Status](https://travis-ci.org/spf13/cobra.svg "Travis CI status")](https://travis-ci.org/spf13/cobra)
 [![GoDoc](https://godoc.org/github.com/spf13/cobra?status.svg)](https://godoc.org/github.com/spf13/cobra)
 [![Go Report Card](https://goreportcard.com/badge/github.com/spf13/cobra)](https://goreportcard.com/report/github.com/spf13/cobra)
-[![Slack](https://img.shields.io/badge/Slack-cobra-brightgreen)](https://gophers.slack.com/archives/CD3LP1199)
 
 # Table of Contents
 
@@ -30,7 +29,7 @@ name a few. [This list](./projects_using_cobra.md) contains a more extensive lis
   * [Suggestions when "unknown command" happens](#suggestions-when-unknown-command-happens)
   * [Generating documentation for your command](#generating-documentation-for-your-command)
   * [Generating shell completions](#generating-shell-completions)
-- [Contributing](CONTRIBUTING.md)
+- [Contributing](#contributing)
 - [License](#license)
 
 # Overview
@@ -108,7 +107,7 @@ Using Cobra is easy. First, use `go get` to install the latest version
 of the library. This command will install the `cobra` generator executable
 along with the library and its dependencies:
 
-    go get -u github.com/spf13/cobra
+    go get -u github.com/spf13/cobra/cobra
 
 Next, include Cobra in your application:
 
@@ -177,7 +176,7 @@ var rootCmd = &cobra.Command{
 
 func Execute() {
   if err := rootCmd.Execute(); err != nil {
-    fmt.Fprintln(os.Stderr, err)
+    fmt.Println(err)
     os.Exit(1)
   }
 }
@@ -334,10 +333,10 @@ var tryCmd = &cobra.Command{
   Use:   "try",
   Short: "Try and possibly fail at something",
   RunE: func(cmd *cobra.Command, args []string) error {
-    if err := someFunc(); err != nil {
+    err := someFunc()
+    if err := nil {
 	return err
     }
-    return nil
   },
 }
 ```
@@ -754,6 +753,16 @@ Cobra can generate documentation based on subcommands, flags, etc. Read more abo
 ## Generating shell completions
 
 Cobra can generate a shell-completion file for the following shells: Bash, Zsh, Fish, Powershell. If you add more information to your commands, these completions can be amazingly powerful and flexible.  Read more about it in [Shell Completions](shell_completions.md).
+
+# Contributing
+
+1. Fork it
+2. Download your fork to your PC (`git clone https://github.com/your_username/cobra && cd cobra`)
+3. Create your feature branch (`git checkout -b my-new-feature`)
+4. Make changes and add them (`git add .`)
+5. Commit your changes (`git commit -m 'Add some feature'`)
+6. Push to the branch (`git push origin my-new-feature`)
+7. Create new pull request
 
 # License
 
