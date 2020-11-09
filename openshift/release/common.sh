@@ -18,13 +18,13 @@ EOT
 generate_file() {
   echo ":: Generating plugin_register.go file ::"
   local faas_repo=$1
-  
+
   cp ${ROOT_DIR}/openshift/release/plugin_register.go ${ROOT_DIR}/pkg/kn/root/plugin_register.go
-  
+
   # Add new import after placeholder comment containing #plugin#.
   # The `sed` append can be repeated for additional plugins.
   sed -i "/#plugins#/a _ \"${faas_repo}/plugin\"" ${ROOT_DIR}/pkg/kn/root/plugin_register.go
-  
+
   # Format the file accordingly
   gofmt -w -s ${ROOT_DIR}/pkg/kn/root/plugin_register.go
 }
@@ -34,7 +34,7 @@ generate_file() {
 mod_replace() {
   echo ":: Applying go.mod replacements ::"
   local faas_version=$1
-  
+
   cat <<EOF >> "${ROOT_DIR}/go.mod"
 replace (
     github.com/boson-project/faas => github.com/boson-project/faas ${faas_version}
@@ -53,22 +53,22 @@ mod_update() {
   echo ":: Updating go dependencies ::"
   go mod tidy
   go mod vendor
-  
+
   # Cleanup
   find "./vendor" \( -name "OWNERS" -o -name "*_test.go" \) -print0 | xargs -0 rm -f
 }
 
 # Creates new git commits with all the necessary files
 add_files() {
-  echo ":: Adding faas as a plugin ::"
+  echo ":: Adding faas as a plugin ${FAAS_VERSION}::"
   local updated_files=$1
   pushd ${ROOT_DIR}
   git add ${updated_files}
-  git commit -m ":space_invader: Add faas as a plugin"
-  # Create distinct commit for vendor/ dir 
+  git commit -m ":space_invader: Add faas as a plugin ${FAAS_VERSION}"
+  # Create distinct commit for vendor/ dir
   git add vendor
-  git commit -m ":open_file_folder: Update vendor dir"
-  
+  git commit -m ":open_file_folder: Update vendor dir for faas ${FAAS_VERSION}"
+
   popd
 }
 
