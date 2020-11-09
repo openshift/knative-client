@@ -3,7 +3,7 @@
 %global package_name openshift-serverless-clients
 %global product_name OpenShift Serverless
 %global golang_version 1.14
-%global kn_version 0.17.2
+%global kn_version 0.17.3
 %global kn_release 1
 %global kn_cli_version v%{kn_version}
 %global source_dir knative-client
@@ -64,6 +64,10 @@ Obsoletes:      %{package_name} < %{kn_version}
 %{_datadir}/%{name}-redistributable/windows/kn-windows-amd64.exe
 
 %changelog
+* Mon Nov 09 2020 Navid Shaikh <nshaikh@redhat.com> v0.17.3-1
+- Bump kn release v0.17.3
+- Update faas plugin to v0.9.0
+
 * Mon Oct 12 2020 Navid Shaikh <nshaikh@redhat.com> v0.17.2-1
 - Bump kn release v0.17.2
 
