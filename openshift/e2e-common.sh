@@ -85,6 +85,13 @@ build_knative_client() {
   return $failed
 }
 
+
+run_unit_tests() {
+  failed=0
+  go test -v ./... || failed=1
+  return $failed
+}
+
 run_e2e_tests(){
   local tags=$1
   local test_name=$2
