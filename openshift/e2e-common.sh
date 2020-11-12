@@ -55,24 +55,6 @@ timeout() {
   return 0
 }
 
-# Waits until the given hostname resolves via DNS
-# Parameters: $1 - hostname
-wait_until_hostname_resolves() {
-  echo -n "Waiting until hostname $1 resolves via DNS"
-  for _ in {1..150}; do  # timeout after 15 minutes
-    local output
-    output=$(host -t a "$1" | grep 'has address')
-    if [[ -n "${output}" ]]; then
-      echo -e "\n${output}"
-      return 0
-    fi
-    echo -n "."
-    sleep 6
-  done
-  echo -e "\n\nERROR: timeout waiting for hostname $1 to resolve via DNS"
-  return 1
-}
-
 build_knative_client() {
   failed=0
   # run this cross platform build to ensure all the checks pass (as this is done while building artifacts)
@@ -87,16 +69,16 @@ build_knative_client() {
 
 run_unit_tests() {
   failed=0
-  go test -v ./... || failed=1
+  go test -v ./cmd/... ./pkg/... || failed=1
   return $failed
 }
 
 run_client_e2e_tests(){
   local tags=$1
-  local test_name=$2
+  local test_name=${2:-}
 
   header "Running e2e tests"
-  failed=0
+  local failed=0
   # Add local dir to have access to built kn
   export PATH=$PATH:${REPO_ROOT_DIR}
   export GO111MODULE=on
@@ -122,7 +104,7 @@ run_client_e2e_tests(){
     ./test/e2e \
     -v -timeout=$E2E_TIMEOUT -mod=vendor \
     --imagetemplate $TEST_IMAGE_TEMPLATE \
-    ${run_append} || fail_test
+    ${run_append} || failed=$?
 
   return $failed
 }
@@ -169,53 +151,18 @@ create_knative_namespace(){
 	EOF
 }
 
-deploy_serverless_operator(){
-  local name="serverless-operator"
-  local operator_ns
-  operator_ns=$(kubectl get og --all-namespaces | grep global-operators | awk '{print $1}')
-
-  # Create configmap to use the latest manifest.
-  oc create configmap ko-data-serving -n $operator_ns --from-file="openshift/release/knative-serving-ci.yaml"
-
-  # Create eventing manifest. We don't want to do this, but upstream designed that knative-eventing dir is mandatory
-  # when KO_DATA_PATH was overwritten.
-  oc create configmap ko-data-eventing -n $operator_ns --from-file="openshift/release/knative-eventing-ci.yaml"
-
-  # Create configmap to use the latest kourier.
-  oc create configmap kourier-cm -n $operator_ns --from-file="third_party/kourier-latest/kourier.yaml"
-
-  cat <<-EOF | oc apply -f -
-apiVersion: operators.coreos.com/v1alpha1
-kind: Subscription
-metadata:
-  name: ${name}-subscription
-  namespace: ${operator_ns}
-spec:
-  source: ${name}
-  sourceNamespace: $OLM_NAMESPACE
-  name: ${name}
-  channel: "preview-4.6"
-EOF
-}
-
 install_knative_serving_branch() {
   local branch=$1
-
+  local failed=0
   header "Installing Knative Serving from openshift/knative-serving branch $branch"
   rm -rf /tmp/knative-serving
   git clone --branch $branch https://github.com/openshift/knative-serving.git /tmp/knative-serving || return 1
   pushd /tmp/knative-serving
 
-  local current_image_format=$IMAGE_FORMAT
-  export IMAGE_FORMAT='registry.svc.ci.openshift.org/openshift/knative-nightly:${component}'
-
   source "openshift/e2e-common.sh"
-
-  install_knative
-
-  export IMAGE_FORMAT=$current_image_format
-
+  IMAGE_FORMAT='registry.svc.ci.openshift.org/openshift/knative-nightly:${component}' install_knative || failed=1
   popd
+  return $failed
 }
 
 
@@ -233,21 +180,6 @@ install_knative_eventing_branch() {
   cat openshift/release/knative-eventing-channelbroker-ci.yaml >> ci
   cat openshift/release/knative-eventing-mtbroker-ci.yaml >> ci
 
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-controller|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-eventing-controller|g"                               ci
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-ping|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-eventing-ping|g"                                           ci
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-mtping|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-eventing-mtping|g"                                       ci
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-apiserver-receive-adapter|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-eventing-apiserver-receive-adapter|g" ci
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-webhook|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-eventing-webhook|g"                                     ci
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-channel-controller|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-eventing-channel-controller|g"               ci
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-channel-dispatcher|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-eventing-channel-dispatcher|g"               ci
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-channel-broker|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-eventing-channel-broker|g"                       ci
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-broker-ingress|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-eventing-broker-ingress|g"                       ci
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-broker-filter|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-eventing-broker-filter|g"                         ci
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-mtbroker-ingress|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-eventing-mtbroker-ingress|g"                   ci
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-mtbroker-filter|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-eventing-mtbroker-filter|g"                     ci
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-mtchannel-broker|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-eventing-mtchannel-broker|g"                   ci
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-eventing-sugar-controller|registry.svc.ci.openshift.org/openshift/knative-nightly:knative-eventing-sugar-controller|g"                   ci
-
   oc apply -f ci
   rm ci
 
@@ -257,7 +189,6 @@ install_knative_eventing_branch() {
   header "Knative Eventing installed successfully"
   popd
 }
-
 
 ## Uncomment following lines if you are debugging and requiring respective info
 #echo ">> Check resources"
