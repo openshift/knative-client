@@ -20,12 +20,14 @@ pkg_tar() {
     x86_64)
 		  dir=linux
     	mkdir "${OUTDIR}/${dir}"
-    	mv kn-linux-amd64 ${OUTDIR}/${dir}/kn
+      mv kn-linux-amd64 ${OUTDIR}/${dir}/kn
+      chmod u+x ${OUTDIR}/${dir}/kn
       ;;
     macos)
 		  dir=macos
     	mkdir "${OUTDIR}/${dir}"
     	mv kn-darwin-amd64 ${OUTDIR}/${dir}/kn
+      chmod u+x ${OUTDIR}/${dir}/kn
       ;;
       #uncomment following when we support building mentioned archs
       #aarch64|ppc64le|s390x) dir=linux-${1};;
