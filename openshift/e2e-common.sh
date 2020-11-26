@@ -178,7 +178,6 @@ install_knative_eventing_branch() {
   create_knative_namespace eventing
 
   cat openshift/release/knative-eventing-ci.yaml > ci
-  cat openshift/release/knative-eventing-channelbroker-ci.yaml >> ci
   cat openshift/release/knative-eventing-mtbroker-ci.yaml >> ci
 
   oc apply -f ci
