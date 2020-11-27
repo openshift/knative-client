@@ -4,7 +4,7 @@
 %global product_name OpenShift Serverless
 %global golang_version 1.14
 %global kn_version 0.17.3
-%global kn_release 1
+%global kn_release 2
 %global kn_cli_version v%{kn_version}
 %global source_dir knative-client
 %global source_tar %{source_dir}-%{kn_version}-%{kn_release}.tar.gz
@@ -68,6 +68,9 @@ Obsoletes:      %{package_name} < %{kn_version}
 %{_datadir}/%{name}-redistributable/windows/kn-windows-amd64.exe
 
 %changelog
+* Fri Nov 27 2020 Yaakov Selkowitz <yselkowi@redhat.com> - 0.17.3-2
+- Enable Linux binaries for ppc64le/s390x/arm64.
+
 * Mon Nov 09 2020 Navid Shaikh <nshaikh@redhat.com> v0.17.3-1
 - Bump kn release v0.17.3
 - Update faas plugin to v0.9.0
