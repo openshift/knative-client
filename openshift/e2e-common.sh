@@ -190,49 +190,15 @@ install_knative_eventing_branch() {
   popd
 }
 
-function scale_up_workers(){
-  local cluster_api_ns="openshift-machine-api"
-
-  oc get machineset -n ${cluster_api_ns} --show-labels
-
-  # Get the name of the first machineset that has at least 1 replica
-  local machineset
-  machineset=$(oc get machineset -n ${cluster_api_ns} -o custom-columns="name:{.metadata.name},replicas:{.spec.replicas}" | grep " 1" | head -n 1 | awk '{print $1}')
-  # Bump the number of replicas to 6 (+ 1 + 1 == 8 workers)
-  oc patch machineset -n ${cluster_api_ns} "${machineset}" -p '{"spec":{"replicas":6}}' --type=merge
-  wait_until_machineset_scales_up ${cluster_api_ns} "${machineset}" 6
+# Add to exec script if needed
+resources_debug() {
+  echo ">> Check resources"
+  echo ">> - meminfo:"
+  cat /proc/meminfo
+  echo ">> - memory.limit_in_bytes"
+  cat /sys/fs/cgroup/memory/memory.limit_in_bytes
+  echo ">> - cpu.cfs_period_us"
+  cat /sys/fs/cgroup/cpu/cpu.cfs_period_us
+  echo ">> - cpu.cfs_quota_us"
+  cat /sys/fs/cgroup/cpu/cpu.cfs_quota_us
 }
-
-# Waits until the machineset in the given namespaces scales up to the
-# desired number of replicas
-# Parameters: $1 - namespace
-#             $2 - machineset name
-#             $3 - desired number of replicas
-function wait_until_machineset_scales_up() {
-  echo -n "Waiting until machineset $2 in namespace $1 scales up to $3 replicas"
-  for _ in {1..150}; do  # timeout after 15 minutes
-    local available
-    available=$(oc get machineset -n "$1" "$2" -o jsonpath="{.status.availableReplicas}")
-    if [[ ${available} -eq $3 ]]; then
-      echo -e "\nMachineSet $2 in namespace $1 successfully scaled up to $3 replicas"
-      return 0
-    fi
-    echo -n "."
-    sleep 6
-  done
-  echo - "Error: timeout waiting for machineset $2 in namespace $1 to scale up to $3 replicas"
-  return 1
-}
-
-
-## Uncomment following lines if you are debugging and requiring respective info
-#echo ">> Check resources"
-#echo ">> - meminfo:"
-#cat /proc/meminfo
-#echo ">> - memory.limit_in_bytes"
-#cat /sys/fs/cgroup/memory/memory.limit_in_bytes
-#echo ">> - cpu.cfs_period_us"
-#cat /sys/fs/cgroup/cpu/cpu.cfs_period_us
-#echo ">> - cpu.cfs_quota_us"
-#cat /sys/fs/cgroup/cpu/cpu.cfs_quota_us
-

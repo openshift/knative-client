@@ -5,8 +5,6 @@ source "$(dirname "$0")/e2e-common.sh"
 
 set -Eeuox pipefail
 
-scale_up_workers || exit 1
-
 failed=0
 
 # Build binary
