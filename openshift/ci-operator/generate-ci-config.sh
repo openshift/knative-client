@@ -14,7 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-branch=${1-'master'}
+if [ -n "$1" ]; then
+  # Use provided branch value
+  branch=$1
+else
+  # Use current branch otherwise
+  branch=$(git rev-parse --abbrev-ref HEAD)
+fi
 version=$(echo ${branch} | cut -d '-' -f 2)
 tag=${version:-'master'}
 
@@ -76,7 +82,16 @@ tag_specification:
 test_binary_build_commands: make test-install
 tests:
 - as: e2e-aws-ocp-45
-  commands: make test-e2e
-  openshift_installer_src:
+  steps:
     cluster_profile: aws
+    test:
+    - as: test
+      cli: latest
+      commands: make test-e2e
+      from: src
+      resources:
+        requests:
+          cpu: 100m
+          memory: 200Mi
+    workflow: ipi-aws
 EOF
