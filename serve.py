@@ -28,11 +28,12 @@ print(('serving from {}'.format(temp_dir)))
 os.chdir(temp_dir)
 for arch in ['amd64']:
     os.mkdir(arch)
-    for operating_system in ['linux', 'macos', 'windows']:
+    for operating_system in ['linux', 'macos', 'windows', 'linux-s390x']:
         os.mkdir(os.path.join(arch, operating_system))
 
 for arch, operating_system, path in [
         ('amd64', 'linux', '/usr/share/kn/linux_amd64/kn-linux-amd64.tar.gz'),
+        ('amd64', 'linux-s390x', '/usr/share/kn/linux_s390x/kn-linux-s390x.tar.gz'),
         ('amd64', 'macos', '/usr/share/kn/macos/kn-macos-amd64.tar.gz'),
         ('amd64', 'windows', '/usr/share/kn/windows/kn-windows-amd64.zip'),
         ]:

@@ -4,10 +4,11 @@ FROM registry.access.redhat.com/ubi8/ubi-minimal:latest
 RUN mkdir -p /opt/app-root/src/go/src/github.com/knative/client
 WORKDIR /opt/app-root/src/go/src/github.com/knative/client
 RUN microdnf install -y zip tar gzip python3
-ADD package_cliartifacts.sh LICENSE kn-*-amd64* serve.py ./
+ADD package_cliartifacts.sh LICENSE kn-*-* serve.py ./
 RUN bash package_cliartifacts.sh && \
-    mkdir -p /usr/share/kn/{linux_amd64,macos,windows} && \
+    mkdir -p /usr/share/kn/{linux_amd64,macos,windows,linux_s390x} && \
     mv kn-linux-amd64.tar.gz /usr/share/kn/linux_amd64/ && \
     mv kn-macos-amd64.tar.gz /usr/share/kn/macos/ && \
+    mv kn-linux-s390x.tar.gz /usr/share/kn/linux_s390x/ && \
     mv kn-windows-amd64.zip /usr/share/kn/windows/
 CMD ["python3", "serve.py"]

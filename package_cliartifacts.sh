@@ -18,22 +18,26 @@ pkg_tar() {
   local dir
   case "$1" in
     x86_64)
-		  dir=linux
+		  dir=linux-amd64
     	mkdir "${OUTDIR}/${dir}"
       mv kn-linux-amd64 ${OUTDIR}/${dir}/kn
       chmod +x ${OUTDIR}/${dir}/kn
       ;;
     macos)
-		  dir=macos
+		  dir=macos-amd64
     	mkdir "${OUTDIR}/${dir}"
     	mv kn-darwin-amd64 ${OUTDIR}/${dir}/kn
       chmod +x ${OUTDIR}/${dir}/kn
       ;;
-      #uncomment following when we support building mentioned archs
-      #aarch64|ppc64le|s390x) dir=linux-${1};;
+    aarch64| ppc64le| s390x)
+      dir=linux-${1}
+      mkdir "${OUTDIR}/${dir}"
+      mv kn-linux-${1} ${OUTDIR}/${dir}/kn
+      chmod +x ${OUTDIR}/${dir}/kn
+      ;;
   esac
   cp LICENSE ${OUTDIR}/${dir}
-  tar -zcf kn-${dir}-amd64.tar.gz -C ${OUTDIR}/${dir} .
+  tar -zcf kn-${dir}.tar.gz -C ${OUTDIR}/${dir} .
 }
 
 pkg_zip_for_windows() {
@@ -48,4 +52,5 @@ trap "rm -rf '${OUTDIR}'" EXIT INT TERM
 
 pkg_tar x86_64
 pkg_tar macos
+pkg_tar s390x
 pkg_zip_for_windows

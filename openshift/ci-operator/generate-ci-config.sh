@@ -53,6 +53,8 @@ images:
       - destination_dir: .
         source_path: /go/src/github.com/knative/client/kn-linux-amd64
       - destination_dir: .
+        source_path: /go/src/github.com/knative/client/kn-linux-s390x
+      - destination_dir: .
         source_path: /go/src/github.com/knative/client/kn-darwin-amd64
       - destination_dir: .
         source_path: /go/src/github.com/knative/client/kn-windows-amd64.exe
@@ -69,6 +71,14 @@ images:
       - destination_dir: .
         source_path: /go/bin/helloworld
   to: knative-client-test-helloworld
+- dockerfile_path: openshift/ci-operator/knative-test-images/grpc-ping/Dockerfile
+  from: base
+  inputs:
+    test-bin:
+      paths:
+      - destination_dir: .
+        source_path: /go/bin/grpc-ping
+  to: knative-client-test-grpc-ping
 promotion:
   name: $branch
   namespace: openshift
