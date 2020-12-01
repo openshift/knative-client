@@ -190,6 +190,17 @@ install_knative_eventing_branch() {
   popd
 }
 
+install_serverless_operator_branch() {
+  local branch=$1
+  header "Installing serverless operator from openshift-knative/serverless-operator branch $branch"
+  rm -rf /tmp/serverless-operator
+  git clone --branch $branch https://github.com/openshift-knative/serverless-operator.git /tmp/serverless-operator || return 1
+  pushd /tmp/serverless-operator
+  ./hack/install.sh || return 1
+  subheader "Successfully installed serverless operator."
+  popd
+}
+
 # Add to exec script if needed
 resources_debug() {
   echo ">> Check resources"
