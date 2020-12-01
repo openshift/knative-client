@@ -81,7 +81,7 @@ run_client_e2e_tests(){
   header "Running e2e tests"
   local failed=0
   # Add local dir to have access to built kn
-  export PATH=$PATH:${REPO_ROOT_DIR}
+  export PATH=$PATH:${ROOT_DIR}
   export GO111MODULE=on
   # In CI environment GOFLAGS is set to '-mod=vendor', unsetting it and providing explicit flag below
   # while invoking go e2e tests. Unsetting to keep using -mod=vendor irrespective of whether GOFLAGS is set or not.
