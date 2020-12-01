@@ -192,13 +192,20 @@ install_knative_eventing_branch() {
 
 install_serverless_operator_branch() {
   local branch=$1
+  local operator_dir=/tmp/serverless-operator
+  local failed=0
   header "Installing serverless operator from openshift-knative/serverless-operator branch $branch"
-  rm -rf /tmp/serverless-operator
-  git clone --branch $branch https://github.com/openshift-knative/serverless-operator.git /tmp/serverless-operator || return 1
-  pushd /tmp/serverless-operator
-  ./hack/install.sh || return 1
+  rm -rf $operator_dir
+  git clone --branch $branch https://github.com/openshift-knative/serverless-operator.git $operator_dir || failed=1
+  pushd $operator_dir
+  # unset OPENSHIFT_BUILD_NAMESPACE (old CI) and OPENSHIFT_CI (new CI) as its used in serverless-operator's CI
+  # environment as a switch to use CI built images, we want pre-built images of k-s-o and k-o-i
+  unset OPENSHIFT_BUILD_NAMESPACE
+  unset OPENSHIFT_CI
+  ./hack/install.sh || failed=1
   subheader "Successfully installed serverless operator."
   popd
+  return $failed
 }
 
 # Add to exec script if needed
