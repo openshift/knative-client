@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-readonly ROOT_DIR=$(dirname $0)/..
+readonly ROOT_DIR="/go/src/github.com/knative/client"
 source ${ROOT_DIR}/scripts/test-infra/library.sh
 source ${ROOT_DIR}/scripts/test-infra/e2e-tests.sh
 
