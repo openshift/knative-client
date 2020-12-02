@@ -23,6 +23,7 @@ else
 fi
 version=$(echo ${branch} | cut -d '-' -f 2)
 tag=${version:-'master'}
+promotion=${branch/release/knative}
 
 cat <<EOF
 base_images:
@@ -70,7 +71,7 @@ images:
         source_path: /go/bin/helloworld
   to: knative-client-test-helloworld
 promotion:
-  name: $branch
+  name: $promotion
   namespace: openshift
 resources:
   '*':
