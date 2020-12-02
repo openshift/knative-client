@@ -15,8 +15,8 @@
 # limitations under the License.
 
 readonly ROOT_DIR=$(dirname $0)/..
-source ${ROOT_DIR}/vendor/knative.dev/hack/library.sh
-source ${ROOT_DIR}/vendor/knative.dev/hack/e2e-tests.sh
+source ${ROOT_DIR}/scripts/test-infra/library.sh
+source ${ROOT_DIR}/scripts/test-infra/e2e-tests.sh
 
 readonly KN_DEFAULT_TEST_IMAGE="gcr.io/knative-samples/helloworld-go"
 readonly SERVING_NAMESPACE="knative-serving"
