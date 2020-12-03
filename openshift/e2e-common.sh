@@ -204,6 +204,11 @@ install_serverless_operator_branch() {
   unset OPENSHIFT_CI
   ./hack/install.sh || failed=1
   subheader "Successfully installed serverless operator."
+
+  subheader "Install Kafka from serverless-operator repo"
+  INSTALL_SERVING="false" INSTALL_KAFKA="true" ./hack/install.sh || failed=1
+  subheader "Successfully installed serverless operator."
+
   popd
   return $failed
 }
