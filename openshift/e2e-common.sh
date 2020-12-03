@@ -209,6 +209,19 @@ install_serverless_operator_branch() {
   INSTALL_SERVING="false" INSTALL_KAFKA="true" ./hack/install.sh || failed=1
   subheader "Successfully installed serverless operator."
 
+  header "Applying Strimzi Topic CR"
+  cat <<-EOF | oc apply -f - || failed=1
+apiVersion: kafka.strimzi.io/v1beta1
+kind: KafkaTopic
+metadata:
+  name: test-topic
+  labels:
+    strimzi.io/cluster: my-cluster
+spec:
+  partitions: 100
+  replicas: 1
+EOF
+
   popd
   return $failed
 }
