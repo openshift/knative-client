@@ -207,7 +207,7 @@ install_serverless_operator_branch() {
 
   subheader "Install Kafka from serverless-operator repo"
   INSTALL_SERVING="false" INSTALL_KAFKA="true" ./hack/install.sh || failed=1
-  subheader "Successfully installed serverless operator."
+  subheader "Successfully installed kafka."
 
   header "Applying Strimzi Topic CR"
   cat <<-EOF | oc apply -f - || failed=1
