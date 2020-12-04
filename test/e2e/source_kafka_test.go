@@ -67,9 +67,9 @@ func TestSourceKafka(t *testing.T) {
 
 	r := test.NewKnRunResultCollector(t, e2eTest.it.KnTest())
 	defer r.DumpIfFailed()
-
-	err := e2eTest.it.KnPlugin().Install()
-	assert.NilError(t, err)
+	// Don't install the plugin as it's already inlined in kn binary
+	//err := e2eTest.it.KnPlugin().Install()
+	//assert.NilError(t, err)
 
 	serviceCreate(r, "sinksvc")
 
@@ -82,8 +82,8 @@ func TestSourceKafka(t *testing.T) {
 	t.Log("test kn-plugin-source-kafka delete source-name")
 	e2eTest.knSourceKafkaDelete(t, r, "mykafka1")
 
-	err = e2eTest.it.KnPlugin().Uninstall()
-	assert.NilError(t, err)
+	//err = e2eTest.it.KnPlugin().Uninstall()
+	//assert.NilError(t, err)
 }
 
 // Private
