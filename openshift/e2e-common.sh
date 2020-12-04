@@ -202,12 +202,9 @@ install_serverless_operator_branch() {
   # environment as a switch to use CI built images, we want pre-built images of k-s-o and k-o-i
   unset OPENSHIFT_BUILD_NAMESPACE
   unset OPENSHIFT_CI
-  ./hack/install.sh || failed=1
+  # Install all components Serving,Eventing,Strimzi and Kafka
+  SCALE_UP=6 make install-all || failed=1
   subheader "Successfully installed serverless operator."
-
-  subheader "Install Kafka from serverless-operator repo"
-  INSTALL_SERVING="false" INSTALL_KAFKA="true" ./hack/install.sh || failed=1
-  subheader "Successfully installed kafka."
 
   header "Applying Strimzi Topic CR"
   cat <<-EOF | oc apply -n kafka -f - || failed=1
