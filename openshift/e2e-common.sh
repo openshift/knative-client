@@ -210,7 +210,7 @@ install_serverless_operator_branch() {
   subheader "Successfully installed kafka."
 
   header "Applying Strimzi Topic CR"
-  cat <<-EOF | oc apply -f - || failed=1
+  cat <<-EOF | oc apply -n kafka -f - || failed=1
 apiVersion: kafka.strimzi.io/v1beta1
 kind: KafkaTopic
 metadata:
