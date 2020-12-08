@@ -1910,8 +1910,8 @@ knative.dev/eventing-contrib v0.11.2/go.mod h1:SnXZgSGgMSMLNFTwTnpaOH7hXDzTFtw0J
 knative.dev/eventing-contrib v0.18.6 h1:6xEzPkbKbY3Iq9LPKNNjLcYiadOXZGw/eVYAdDuIAF4=
 knative.dev/eventing-contrib v0.18.6/go.mod h1:Y3pKSlnqk5pG8r/2wljnPiZa1NPu/qjdQ3bX8ex2WVw=
 knative.dev/hack v0.0.0-20201120192952-353db687ec5b/go.mod h1:PHt8x8yX5Z9pPquBEfIj0X66f8iWkWfR0S/sarACJrI=
-knative.dev/kn-plugin-source-kafka v0.0.0-20201203183209-e1f755efaca3 h1:tBvI18pFlqv5jlXRsQQFoNhCfnuojioNhhX61bn4PAc=
-knative.dev/kn-plugin-source-kafka v0.0.0-20201203183209-e1f755efaca3/go.mod h1:1ERx7q91onk4UW3BUoxdDjvZbrVGYGVE9JtsxgjGo7w=
+knative.dev/kn-plugin-source-kafka v0.18.0 h1:qIDptZ/sIhWvFOg00BmyulD/+E9YdDX3GUrqiDb4KMo=
+knative.dev/kn-plugin-source-kafka v0.18.0/go.mod h1:1ERx7q91onk4UW3BUoxdDjvZbrVGYGVE9JtsxgjGo7w=
 knative.dev/networking v0.0.0-20200812200006-4d518e76538a/go.mod h1:ZewGJAElO4qPOeZTKuLIO3NQNGAkqcQVu64gHOSiPPg=
 knative.dev/networking v0.0.0-20200831172815-5f2e0ad6215f/go.mod h1:lt/ZAGq2ig/5jbJuHtJ41CibqWAIuBCRVCN29bvvSKQ=
 knative.dev/networking v0.0.0-20200922180040-a71b40c69b15 h1:UhUyfzy5VTEdkWXlkJAKLDPkPK9MKNpENfn17rlYtcs=

@@ -1113,7 +1113,7 @@ knative.dev/eventing-contrib/kafka/source/pkg/apis/sources/v1beta1
 knative.dev/eventing-contrib/kafka/source/pkg/client/clientset/versioned/scheme
 knative.dev/eventing-contrib/kafka/source/pkg/client/clientset/versioned/typed/sources/v1alpha1
 knative.dev/eventing-contrib/kafka/source/pkg/client/clientset/versioned/typed/sources/v1alpha1/fake
-# knative.dev/kn-plugin-source-kafka v0.0.0-20201203183209-e1f755efaca3
+# knative.dev/kn-plugin-source-kafka v0.18.0
 ## explicit
 knative.dev/kn-plugin-source-kafka/pkg/client
 knative.dev/kn-plugin-source-kafka/pkg/factories
