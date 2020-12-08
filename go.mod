@@ -3,7 +3,7 @@ module knative.dev/client
 go 1.14
 
 require (
-	github.com/boson-project/faas v0.0.0-00010101000000-000000000000
+	github.com/boson-project/faas v0.10.0
 	github.com/maximilien/kn-source-pkg v0.5.0
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/pkg/errors v0.9.1
@@ -37,8 +37,6 @@ replace (
 )
 
 replace (
-	github.com/boson-project/faas => github.com/boson-project/faas v0.9.1-0.20201125171548-557361a37446
-
 	// Pin conflicting dependency versions
 	// Buildpacks required version
 	github.com/docker/docker => github.com/docker/docker v1.4.2-0.20200221181110-62bd5a33f707
