@@ -1,4 +1,4 @@
-// +build appengine
+// +build !go1.10
 
 /*
  *
@@ -25,7 +25,7 @@ import (
 	"net/url"
 )
 
-// SPIFFEIDFromState is a no-op for appengine builds.
+//TODO(ZhenLian): delete this file when we remove Go 1.9 tests.
 func SPIFFEIDFromState(state tls.ConnectionState) *url.URL {
 	return nil
 }

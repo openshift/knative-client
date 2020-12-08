@@ -1,3 +1,5 @@
+// +build go1.10
+
 /*
  *
  * Copyright 2020 gRPC authors.
@@ -28,8 +30,6 @@ import (
 	"google.golang.org/grpc/grpclog"
 )
 
-var logger = grpclog.Component("credentials")
-
 // SPIFFEIDFromState parses the SPIFFE ID from State. If the SPIFFE ID format
 // is invalid, return nil with warning.
 func SPIFFEIDFromState(state tls.ConnectionState) *url.URL {
@@ -43,20 +43,20 @@ func SPIFFEIDFromState(state tls.ConnectionState) *url.URL {
 		}
 		// From this point, we assume the uri is intended for a SPIFFE ID.
 		if len(uri.String()) > 2048 {
-			logger.Warning("invalid SPIFFE ID: total ID length larger than 2048 bytes")
+			grpclog.Warning("invalid SPIFFE ID: total ID length larger than 2048 bytes")
 			return nil
 		}
 		if len(uri.Host) == 0 || len(uri.RawPath) == 0 || len(uri.Path) == 0 {
-			logger.Warning("invalid SPIFFE ID: domain or workload ID is empty")
+			grpclog.Warning("invalid SPIFFE ID: domain or workload ID is empty")
 			return nil
 		}
 		if len(uri.Host) > 255 {
-			logger.Warning("invalid SPIFFE ID: domain length larger than 255 characters")
+			grpclog.Warning("invalid SPIFFE ID: domain length larger than 255 characters")
 			return nil
 		}
 		// A valid SPIFFE certificate can only have exactly one URI SAN field.
 		if len(state.PeerCertificates[0].URIs) > 1 {
-			logger.Warning("invalid SPIFFE ID: multiple URI SANs")
+			grpclog.Warning("invalid SPIFFE ID: multiple URI SANs")
 			return nil
 		}
 		spiffeID = uri
