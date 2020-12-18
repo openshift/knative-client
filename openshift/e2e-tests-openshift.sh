@@ -257,6 +257,15 @@ install_knative_eventing_branch() {
   popd
 }
 
+function install_serverless(){
+  header "Installing Serverless Operator"
+  git clone --branch release-1.10 https://github.com/openshift-knative/serverless-operator.git /tmp/serverless-operator
+  # unset OPENSHIFT_BUILD_NAMESPACE as its used in serverless-operator's CI environment as a switch
+  # to use CI built images, we want pre-built images of k-s-o and k-o-i
+  unset OPENSHIFT_BUILD_NAMESPACE
+  /tmp/serverless-operator/hack/install.sh || return 1
+  header "Serverless Operator installed successfully"
+}
 
 ## Uncomment following lines if you are debugging and requiring respective info
 #echo ">> Check resources"
@@ -273,11 +282,13 @@ failed=0
 
 (( !failed )) && build_knative_client || failed=1
 
-(( !failed )) && install_knative_serving_branch "${SERVING_BRANCH}" || failed=1
+#(( !failed )) && install_knative_serving_branch "${SERVING_BRANCH}" || failed=1
+
+#(( !failed )) && install_knative_eventing_branch "${EVENTING_BRANCH}" || failed=1
+
+(( !failed )) && install_serverless || failed=1
 
 (( !failed )) && run_e2e_tests serving || failed=1
-
-(( !failed )) && install_knative_eventing_branch "${EVENTING_BRANCH}" || failed=1
 
 (( !failed )) && run_e2e_tests eventing || failed=1
 
