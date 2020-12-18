@@ -87,7 +87,7 @@ function wait_until_hostname_resolves() {
 
 function install_serverless(){
   header "Installing Serverless Operator"
-  git clone https://github.com/openshift-knative/serverless-operator.git /tmp/serverless-operator
+  git clone --branch release-1.7 https://github.com/openshift-knative/serverless-operator.git /tmp/serverless-operator
   # unset OPENSHIFT_BUILD_NAMESPACE as its used in serverless-operator's CI environment as a switch
   # to use CI built images, we want pre-built images of k-s-o and k-o-i
   unset OPENSHIFT_BUILD_NAMESPACE
