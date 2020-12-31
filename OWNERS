@@ -1,9 +1,7 @@
+# The OWNERS file is used by prow to automatically merge approved PRs.
+
 approvers:
-- sixolet
-- cppforlife
-- rhuss
-- maximilien
-- navidshaikh
-# TOC members as a fallback
-- mattmoor
-- evankanderson
+- knative-client-approvers
+
+reviewers:
+- knative-client-reviewers
