@@ -27,7 +27,7 @@ readonly OLM_NAMESPACE="openshift-marketplace"
 
 # if you want to setup the nightly serving/eventing, set `release-next` OR
 # set release branch name for example: release-v0.19.1
-readonly SERVING_BRANCH="release-next"
+readonly SERVING_BRANCH="release-v0.19.0"
 # Pin the version due to issue in current nightly version
 readonly EVENTING_BRANCH="release-v0.19.2"
 
