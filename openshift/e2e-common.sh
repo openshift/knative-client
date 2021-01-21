@@ -190,6 +190,44 @@ install_knative_eventing_branch() {
   popd
 }
 
+install_serverless_operator_branch() {
+  local branch=$1
+  local operator_dir=/tmp/serverless-operator
+  local failed=0
+  header "Installing serverless operator from openshift-knative/serverless-operator branch $branch"
+  rm -rf $operator_dir
+  git clone --branch $branch https://github.com/openshift-knative/serverless-operator.git $operator_dir || failed=1
+  pushd $operator_dir
+  # unset OPENSHIFT_BUILD_NAMESPACE (old CI) and OPENSHIFT_CI (new CI) as its used in serverless-operator's CI
+  # environment as a switch to use CI built images, we want pre-built images of k-s-o and k-o-i
+  unset OPENSHIFT_BUILD_NAMESPACE
+  unset OPENSHIFT_CI
+
+  # Replace deprecated registry.svc.ci with registry.ci until release branch is fixed
+  sed -i 's|registry.svc.ci.openshift.org/openshift/openshift-serverless-v1.13.0|registry.ci.openshift.org/openshift/openshift-serverless-v1.13.0|g' olm-catalog/serverless-operator/manifests/serverless-operator.clusterserviceversion.yaml
+  cat olm-catalog/serverless-operator/manifests/serverless-operator.clusterserviceversion.yaml
+
+  # Install all components Serving,Eventing,Strimzi and Kafka
+  SCALE_UP=6 make install || failed=1
+  subheader "Successfully installed serverless operator."
+
+#  header "Applying Strimzi Topic CR"
+#  cat <<-EOF | oc apply -n kafka -f - || failed=1
+#apiVersion: kafka.strimzi.io/v1beta1
+#kind: KafkaTopic
+#metadata:
+#  name: test-topic
+#  labels:
+#    strimzi.io/cluster: my-cluster
+#spec:
+#  partitions: 100
+#  replicas: 1
+#EOF
+
+  popd
+  return $failed
+}
+
 # Add to exec script if needed
 resources_debug() {
   echo ">> Check resources"
