@@ -28,17 +28,13 @@ require (
 // Temporary pinning certain libraries. Please check periodically, whether these are still needed
 // ----------------------------------------------------------------------------------------------
 replace (
+	// Buildpacks required version
+	github.com/docker/docker => github.com/docker/docker v1.4.2-0.20200221181110-62bd5a33f707
+	// Darwin cross-build required version
+	golang.org/x/sys => golang.org/x/sys v0.0.0-20200302150141-5c8b2ff67527
 	k8s.io/api => k8s.io/api v0.18.8
 	k8s.io/apimachinery => k8s.io/apimachinery v0.18.8
 	k8s.io/cli-runtime => k8s.io/cli-runtime v0.18.8
 	k8s.io/client-go => k8s.io/client-go v0.18.8
 	k8s.io/code-generator => k8s.io/code-generator v0.18.8
-)
-
-replace (
-	// Pin conflicting dependency versions
-	// Buildpacks required version
-	github.com/docker/docker => github.com/docker/docker v1.4.2-0.20200221181110-62bd5a33f707
-	// Darwin cross-build required version
-	golang.org/x/sys => golang.org/x/sys v0.0.0-20200302150141-5c8b2ff67527
 )
