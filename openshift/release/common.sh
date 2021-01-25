@@ -3,8 +3,8 @@
 
 ROOT_DIR=$(dirname $0)/../..
 
-readonly FAAS_VERSION=${FAAS_VERSION:-"main"}
-readonly FAAS_REPO=${FAAS_REPO:-"github.com/boson-project/faas"}
+readonly FAAS_VERSION=${FAAS_VERSION:-"v0.11.0"}
+readonly FAAS_REPO=${FAAS_REPO:-"github.com/boson-project/func"}
 
 # The vendor/ dir is omitted to be added separately
 UPDATED_FILES=$(cat <<EOT | tr '\n' ' '
@@ -35,10 +35,9 @@ mod_replace() {
   echo ":: Applying go.mod replacements ::"
   local faas_version=$1
 
+  go mod edit -require=$FAAS_REPO@$FAAS_VERSION
   cat <<EOF >> "${ROOT_DIR}/go.mod"
 replace (
-    github.com/boson-project/faas => github.com/boson-project/faas ${faas_version}
-
     // Pin conflicting dependency versions
     // Buildpacks required version
     github.com/docker/docker => github.com/docker/docker v1.4.2-0.20200221181110-62bd5a33f707
