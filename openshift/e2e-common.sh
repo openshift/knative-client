@@ -208,21 +208,21 @@ install_serverless_operator_branch() {
   cat olm-catalog/serverless-operator/manifests/serverless-operator.clusterserviceversion.yaml
 
   # Install all components Serving,Eventing,Strimzi and Kafka
-  SCALE_UP=6 make install || failed=1
+  SCALE_UP=6 make install-all || failed=1
   subheader "Successfully installed serverless operator."
 
-#  header "Applying Strimzi Topic CR"
-#  cat <<-EOF | oc apply -n kafka -f - || failed=1
-#apiVersion: kafka.strimzi.io/v1beta1
-#kind: KafkaTopic
-#metadata:
-#  name: test-topic
-#  labels:
-#    strimzi.io/cluster: my-cluster
-#spec:
-#  partitions: 100
-#  replicas: 1
-#EOF
+  header "Applying Strimzi Topic CR"
+  cat <<-EOF | oc apply -n kafka -f - || failed=1
+apiVersion: kafka.strimzi.io/v1beta1
+kind: KafkaTopic
+metadata:
+  name: test-topic
+  labels:
+    strimzi.io/cluster: my-cluster
+spec:
+  partitions: 100
+  replicas: 1
+EOF
 
   popd
   return $failed
