@@ -10,7 +10,7 @@ require (
 	github.com/spf13/cobra v1.0.1-0.20201006035406-b97b5ead31f7
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.7.0
-	golang.org/x/crypto v0.0.0-20201002170205-7f63de1d35b0
+	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897
 	gotest.tools v2.2.0+incompatible
 	k8s.io/api v0.18.8
 	k8s.io/apimachinery v0.19.1
@@ -19,6 +19,7 @@ require (
 	k8s.io/code-generator v0.18.8
 	knative.dev/eventing v0.19.0
 	knative.dev/hack v0.0.0-20201103151104-3d5abc3a0075
+	knative.dev/kn-plugin-source-kafka v0.19.0
 	knative.dev/networking v0.0.0-20201103163404-b9f80f4537af
 	knative.dev/pkg v0.0.0-20201103163404-5514ab0c1fdf
 	knative.dev/serving v0.19.0
