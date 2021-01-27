@@ -68,7 +68,7 @@ Obsoletes:      %{package_name} < %{kn_version}
 %{_datadir}/%{name}-redistributable/windows/kn-windows-amd64.exe
 
 %changelog
-* Thu Dec 17 2020 David Simansky <dsimansk@redhat.com> v0.19.1-2
+* Wed Jan 27 2021 David Simansky <dsimansk@redhat.com> v0.19.1-2
 - Bump kn release v0.19.1-2
 
 * Thu Dec 17 2020 Navid Shaikh <nshaikh@redhat.com> v0.19.1-1
