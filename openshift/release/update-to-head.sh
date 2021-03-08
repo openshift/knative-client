@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Synchs the release-next branch to master and then triggers CI
+# Synchs the release-next branch to main and then triggers CI
 # Usage: update-to-head.sh
 
 set -e
@@ -32,9 +32,9 @@ serve.py
 EOT
 )
 
-# Reset release-next to upstream/master.
-git fetch upstream master
-git checkout upstream/master -B release-next
+# Reset release-next to upstream/main.
+git fetch upstream main
+git checkout upstream/main -B release-next
 
 # Update openshift's main and take all needed files from there.
 git fetch openshift main
@@ -48,7 +48,7 @@ git push -f openshift release-next
 git checkout release-next -B release-next-ci
 date > ci
 git add ci
-git commit -m ":robot: Triggering CI on branch 'release-next' after synching to upstream/master"
+git commit -m ":robot: Triggering CI on branch 'release-next' after synching to upstream/main"
 git push -f openshift release-next-ci
 
 if hash hub 2>/dev/null; then
