@@ -22,7 +22,7 @@ else
   branch=$(git rev-parse --abbrev-ref HEAD)
 fi
 version=$(echo ${branch} | cut -d '-' -f 2)
-tag=${version:-'master'}
+tag=${version:-'main'}
 promotion=${branch/release/knative}
 
 cat <<EOF

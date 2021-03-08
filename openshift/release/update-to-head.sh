@@ -36,9 +36,9 @@ EOT
 git fetch upstream master
 git checkout upstream/master -B release-next
 
-# Update openshift's master and take all needed files from there.
-git fetch openshift master
-git checkout openshift/master $custom_files
+# Update openshift's main and take all needed files from there.
+git fetch openshift main
+git checkout openshift/main $custom_files
 git add openshift OWNERS_ALIASES OWNERS Makefile
 git commit -m ":open_file_folder: Update openshift specific files."
 
