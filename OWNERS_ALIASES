@@ -1,10 +1,13 @@
 aliases:
-  toc:
-  - evankanderson
-  - grantr
+  knative-client-approvers:
+  - alanfx
+  - dsimansk
   - markusthoemmes
-  - mattmoor
+  - matzew
   - rhuss
-  client-wg-leads:
+  knative-client-reviewers:
+  - alanfx
+  - dsimansk
+  - markusthoemmes
+  - matzew
   - rhuss
-  - navidshaikh
