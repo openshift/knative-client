@@ -31,7 +31,7 @@ for arch in ['amd64','arm64','ppc64le','s390x']:
 
 for arch, operating_system, path in [
         ('amd64', 'linux', '/usr/share/kn/linux_amd64/kn-linux-amd64.tar.gz'),
-        ('arm64', 'linux', '/usr/share/kn/linux_amd64/kn-linux-arm64.tar.gz'),
+        ('arm64', 'linux', '/usr/share/kn/linux_arm64/kn-linux-arm64.tar.gz'),
         ('ppc64le', 'linux', '/usr/share/kn/linux_ppc64le/kn-linux-ppc64le.tar.gz'),
         ('s390x', 'linux', '/usr/share/kn/linux_s390x/kn-linux-s390x.tar.gz'),
         ('amd64', 'macos', '/usr/share/kn/macos/kn-macos-amd64.tar.gz'),
