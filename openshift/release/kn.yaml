@@ -3,10 +3,10 @@ plugins:
     module: knative.dev/kn-plugin-source-kafka
     pluginImportPath: knative.dev/kn-plugin-source-kafka/plugin
     version: v0.20.0
-  # - name: func
-  #   module: boson-project/func
-  #   pluginImportPath: github.com/boson-project/func/plugin
-  #   version: v0.12.0  
+  - name: func
+    module: github.com/boson-project/func
+    pluginImportPath: github.com/boson-project/func/plugin
+    version: main  
   # TODO: figure out go.mod replace
   #   replace:
   #      - module:
