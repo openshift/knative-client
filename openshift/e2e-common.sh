@@ -29,7 +29,7 @@ readonly OLM_NAMESPACE="openshift-marketplace"
 # set release branch name for example: release-v0.19.1
 readonly SERVING_BRANCH="release-next"
 # Pin the version due to issue in current nightly version
-readonly EVENTING_BRANCH="release-v0.19.2"
+readonly EVENTING_BRANCH="release-next"
 
 # Determine if we're running locally or in CI.
 if [ -n "$OPENSHIFT_BUILD_NAMESPACE" ]; then
