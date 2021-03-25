@@ -69,8 +69,8 @@ $ make ci-operator-config
 $ vi core-services/image-mirroring/knative/mapping_knative_v0_14_quay
 
 # Add following lines for the kn image like below
-registry.svc.ci.openshift.org/openshift/knative-v0.14.0:kn quay.io/openshift-knative/kn:v0.14.0
-registry.svc.ci.openshift.org/openshift/knative-v0.14.0:kn-cli-artifacts quay.io/openshift-knative/kn-cli-artifacts:v0.14.0
+registry.ci.openshift.org/openshift/knative-v0.14.0:kn quay.io/openshift-knative/kn:v0.14.0
+registry.ci.openshift.org/openshift/knative-v0.14.0:kn-cli-artifacts quay.io/openshift-knative/kn-cli-artifacts:v0.14.0
 ```
 
 ### Create a PR against openshift/release repo for CI setup of release branch using configs generated above:

@@ -37,11 +37,11 @@ if [ -n "$OPENSHIFT_BUILD_NAMESPACE" ]; then
 elif [ -n "$DOCKER_REPO_OVERRIDE" ]; then
   readonly TEST_IMAGE_TEMPLATE="${DOCKER_REPO_OVERRIDE}/{{.Name}}"
 elif [ -n "$BRANCH" ]; then
-  readonly TEST_IMAGE_TEMPLATE="registry.svc.ci.openshift.org/openshift/${BRANCH}:knative-client-test-{{.Name}}"
+  readonly TEST_IMAGE_TEMPLATE="registry.ci.openshift.org/openshift/${BRANCH}:knative-client-test-{{.Name}}"
 elif [ -n "$TEMPLATE" ]; then
   readonly TEST_IMAGE_TEMPLATE="$TEMPLATE"
 else
-  readonly TEST_IMAGE_TEMPLATE="registry.svc.ci.openshift.org/openshift/knative-nightly:knative-client-test-{{.Name}}"
+  readonly TEST_IMAGE_TEMPLATE="registry.ci.openshift.org/openshift/knative-nightly:knative-client-test-{{.Name}}"
 fi
 
 env
@@ -161,7 +161,7 @@ install_knative_serving_branch() {
   pushd /tmp/knative-serving
 
   source "openshift/e2e-common.sh"
-  IMAGE_FORMAT='registry.svc.ci.openshift.org/openshift/knative-nightly:${component}' install_knative || failed=1
+  IMAGE_FORMAT='registry.ci.openshift.org/openshift/knative-nightly:${component}' install_knative || failed=1
   popd
   return $failed
 }
