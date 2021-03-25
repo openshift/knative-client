@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # Dockerfile to bootstrap build and test in openshift-ci
-FROM openshift/release:golang-1.15
+FROM openshift/origin-release:golang-1.15
 
 # Add kubernetes repository
 ADD openshift/ci-operator/build-image/kubernetes.repo /etc/yum.repos.d/
