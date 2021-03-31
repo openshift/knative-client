@@ -120,6 +120,10 @@ func (i *Image) Env(key string) (string, error) {
 	return "", nil
 }
 
+func (i *Image) Entrypoint() ([]string, error) {
+	return i.inspect.Config.Entrypoint, nil
+}
+
 func (i *Image) OS() (string, error) {
 	return i.inspect.Os, nil
 }
@@ -480,6 +484,10 @@ func (i *Image) Delete() error {
 	}
 	_, err := i.docker.ImageRemove(context.Background(), i.inspect.ID, options)
 	return err
+}
+
+func (i *Image) ManifestSize() (int64, error) {
+	return 0, nil
 }
 
 // downloadBaseLayersOnce exports the base image from the daemon and populates layerPaths the first time it is called.

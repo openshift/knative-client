@@ -34,6 +34,7 @@ type Image interface {
 	SetLabel(string, string) error
 	RemoveLabel(string) error
 	Env(key string) (string, error)
+	Entrypoint() ([]string, error)
 	SetEnv(string, string) error
 	SetEntrypoint(...string) error
 	SetWorkingDir(string) error
@@ -59,6 +60,8 @@ type Image interface {
 	OS() (string, error)
 	OSVersion() (string, error)
 	Architecture() (string, error)
+	// ManifestSize returns the size of the manifest. If a manifest doesn't exist, it returns 0.
+	ManifestSize() (int64, error)
 }
 
 type Identifier fmt.Stringer

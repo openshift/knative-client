@@ -3,8 +3,8 @@ module knative.dev/client
 go 1.14
 
 require (
-	github.com/boson-project/func v0.11.1-0.20210322141803-dc2fbee67f7f
-	github.com/google/go-cmp v0.5.4
+	github.com/boson-project/func v0.12.0
+	github.com/google/go-cmp v0.5.5
 	github.com/maximilien/kn-source-pkg v0.6.1
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/pkg/errors v0.9.1

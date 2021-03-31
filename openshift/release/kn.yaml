@@ -6,9 +6,4 @@ plugins:
   - name: func
     module: github.com/boson-project/func
     pluginImportPath: github.com/boson-project/func/plugin
-    version: main  
-  # TODO: figure out go.mod replace
-  #   replace:
-  #      - module:
-  #        version
-  
+    version: v0.12.0

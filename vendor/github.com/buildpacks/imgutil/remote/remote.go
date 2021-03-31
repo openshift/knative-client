@@ -160,6 +160,14 @@ func (i *Image) Env(key string) (string, error) {
 	return "", nil
 }
 
+func (i *Image) Entrypoint() ([]string, error) {
+	cfg, err := i.image.ConfigFile()
+	if err != nil || cfg == nil {
+		return nil, fmt.Errorf("failed to get config file for image '%s'", i.repoName)
+	}
+	return cfg.Config.Entrypoint, nil
+}
+
 func (i *Image) OS() (string, error) {
 	cfg, err := i.image.ConfigFile()
 	if err != nil || cfg == nil || cfg.OS == "" {
@@ -516,6 +524,10 @@ func (i *Image) Delete() error {
 		return err
 	}
 	return remote.Delete(ref, remote.WithAuth(auth))
+}
+
+func (i *Image) ManifestSize() (int64, error) {
+	return i.image.Size()
 }
 
 type subImage struct {

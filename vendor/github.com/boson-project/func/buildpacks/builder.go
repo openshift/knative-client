@@ -33,10 +33,11 @@ var RuntimeToBuildpack = map[string]string{
 	"node":       "quay.io/boson/faas-nodejs-builder",
 	"go":         "quay.io/boson/faas-go-builder",
 	"springboot": "quay.io/boson/faas-springboot-builder",
+	"python":     "quay.io/boson/faas-python-builder",
 }
 
 // Build the Function at path.
-func (builder *Builder) Build(f bosonFunc.Function) (err error) {
+func (builder *Builder) Build(ctx context.Context, f bosonFunc.Function) (err error) {
 
 	// Use the builder found in the Function configuration file
 	// If one isn't found, use the defaults
@@ -61,9 +62,9 @@ func (builder *Builder) Build(f bosonFunc.Function) (err error) {
 	}
 
 	packOpts := pack.BuildOptions{
-		AppPath: f.Root,
-		Image:   f.Image,
-		Builder: packBuilder,
+		AppPath:    f.Root,
+		Image:      f.Image,
+		Builder:    packBuilder,
 		DockerHost: os.Getenv("DOCKER_HOST"),
 		ContainerConfig: struct {
 			Network string
@@ -86,7 +87,7 @@ func (builder *Builder) Build(f bosonFunc.Function) (err error) {
 	}
 
 	// Build based using the given builder.
-	if err = packClient.Build(context.Background(), packOpts); err != nil {
+	if err = packClient.Build(ctx, packOpts); err != nil {
 		// If the builder was not showing logs, embed the full logs in the error.
 		if !builder.Verbose {
 			err = fmt.Errorf("%v\noutput: %s\n", err, logWriter.(*bytes.Buffer).String())
