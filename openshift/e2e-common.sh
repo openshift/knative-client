@@ -36,11 +36,11 @@ if [ -n "$OPENSHIFT_BUILD_NAMESPACE" ]; then
 elif [ -n "$DOCKER_REPO_OVERRIDE" ]; then
   readonly TEST_IMAGE_TEMPLATE="${DOCKER_REPO_OVERRIDE}/{{.Name}}"
 elif [ -n "$BRANCH" ]; then
-  readonly TEST_IMAGE_TEMPLATE="registry.svc.ci.openshift.org/openshift/${BRANCH}:knative-client-test-{{.Name}}"
+  readonly TEST_IMAGE_TEMPLATE="registry.ci.openshift.org/openshift/${BRANCH}:knative-client-test-{{.Name}}"
 elif [ -n "$TEMPLATE" ]; then
   readonly TEST_IMAGE_TEMPLATE="$TEMPLATE"
 else
-  readonly TEST_IMAGE_TEMPLATE="registry.svc.ci.openshift.org/openshift/knative-nightly:knative-client-test-{{.Name}}"
+  readonly TEST_IMAGE_TEMPLATE="registry.ci.openshift.org/openshift/knative-nightly:knative-client-test-{{.Name}}"
 fi
 
 env
@@ -205,12 +205,12 @@ install_knative_serving_branch() {
   export IMAGE_kourier="quay.io/3scale/kourier:v0.3.11"
   CATALOG_SOURCE="openshift/olm/knative-serving.catalogsource.yaml"
 
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-serving-queue|registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-queue|g"                   ${CATALOG_SOURCE}
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-serving-activator|registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-activator|g"           ${CATALOG_SOURCE}
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-serving-autoscaler|registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-autoscaler|g"         ${CATALOG_SOURCE}
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-serving-autoscaler-hpa|registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-autoscaler-hpa|g" ${CATALOG_SOURCE}
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-serving-webhook|registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-webhook|g"               ${CATALOG_SOURCE}
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:knative-serving-controller|registry.svc.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-controller|g"         ${CATALOG_SOURCE}
+  sed -i -e "s|registry.ci.openshift.org/openshift/knative-.*:knative-serving-queue|registry.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-queue|g"                   ${CATALOG_SOURCE}
+  sed -i -e "s|registry.ci.openshift.org/openshift/knative-.*:knative-serving-activator|registry.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-activator|g"           ${CATALOG_SOURCE}
+  sed -i -e "s|registry.ci.openshift.org/openshift/knative-.*:knative-serving-autoscaler|registry.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-autoscaler|g"         ${CATALOG_SOURCE}
+  sed -i -e "s|registry.ci.openshift.org/openshift/knative-.*:knative-serving-autoscaler-hpa|registry.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-autoscaler-hpa|g" ${CATALOG_SOURCE}
+  sed -i -e "s|registry.ci.openshift.org/openshift/knative-.*:knative-serving-webhook|registry.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-webhook|g"               ${CATALOG_SOURCE}
+  sed -i -e "s|registry.ci.openshift.org/openshift/knative-.*:knative-serving-controller|registry.ci.openshift.org/openshift/knative-v0.17.3:knative-serving-controller|g"         ${CATALOG_SOURCE}
 
   envsubst < $CATALOG_SOURCE | oc apply -n $OLM_NAMESPACE -f -
 
@@ -223,7 +223,7 @@ install_knative_serving_branch() {
   sed -i -e 's/kourier-control.knative-serving/kourier-control.knative-serving-ingress/g'  third_party/kourier-latest/kourier.yaml
 
   sed -i -e "s|docker.io/maistra/proxyv2-ubi8:.*|${KOURIER_GATEWAY}|g"                                        ${CATALOG_SOURCE}
-  sed -i -e "s|registry.svc.ci.openshift.org/openshift/knative-.*:kourier|${KOURIER_CONTROL}|g"               ${CATALOG_SOURCE}
+  sed -i -e "s|registry.ci.openshift.org/openshift/knative-.*:kourier|${KOURIER_CONTROL}|g"               ${CATALOG_SOURCE}
 
   # release-next branch keeps updating the latest manifest in knative-serving-ci.yaml for serving resources.
   # see: https://github.com/openshift/knative-serving/blob/release-next/openshift/release/knative-serving-ci.yaml
