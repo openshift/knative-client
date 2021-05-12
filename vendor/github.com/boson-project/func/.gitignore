@@ -1,0 +1,14 @@
+/func
+/func_*
+/templates/go/events/go.sum
+/templates/go/http/go.sum
+/coverage.out
+/bin
+
+target
+node_modules
+__pycache__
+/coverage.out
+/bin
+
+.vscode

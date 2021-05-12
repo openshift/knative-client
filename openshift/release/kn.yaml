@@ -3,7 +3,7 @@ plugins:
     module: knative.dev/kn-plugin-source-kafka
     pluginImportPath: knative.dev/kn-plugin-source-kafka/plugin
     version: v0.21.0
-#   - name: func
-#     module: github.com/boson-project/func
-#     pluginImportPath: github.com/boson-project/func/plugin
-#     version: v0.13.0
+  - name: func
+    module: github.com/boson-project/func
+    pluginImportPath: github.com/boson-project/func/plugin
+    version: v0.13.0

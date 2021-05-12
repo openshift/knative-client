@@ -3,7 +3,8 @@ module knative.dev/client
 go 1.15
 
 require (
-	github.com/google/go-cmp v0.5.4
+	github.com/boson-project/func v0.14.0
+	github.com/google/go-cmp v0.5.5
 	github.com/maximilien/kn-source-pkg v0.6.3
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/spf13/cobra v1.1.3
@@ -15,7 +16,7 @@ require (
 	k8s.io/apimachinery v0.19.7
 	k8s.io/cli-runtime v0.19.7
 	k8s.io/client-go v0.19.7
-	k8s.io/code-generator v0.19.7
+	k8s.io/code-generator v0.20.1
 	knative.dev/eventing v0.21.0
 	knative.dev/hack v0.0.0-20210203173706-8368e1f6eacf
 	knative.dev/kn-plugin-source-kafka v0.21.0
@@ -25,4 +26,7 @@ require (
 	sigs.k8s.io/yaml v1.2.0
 )
 
-replace github.com/go-openapi/spec => github.com/go-openapi/spec v0.19.3
+replace (
+	github.com/go-openapi/spec => github.com/go-openapi/spec v0.19.3
+	k8s.io/code-generator => k8s.io/code-generator v0.19.7
+)
