@@ -80,10 +80,11 @@ github.com/aws/aws-sdk-go/service/sts/stsiface
 github.com/beorn7/perks/quantile
 # github.com/blendle/zapdriver v1.3.1
 github.com/blendle/zapdriver
-# github.com/boson-project/func v0.14.0
+# github.com/boson-project/func v0.15.1
 ## explicit
 github.com/boson-project/func
 github.com/boson-project/func/buildpacks
+github.com/boson-project/func/cloudevents
 github.com/boson-project/func/cmd
 github.com/boson-project/func/docker
 github.com/boson-project/func/knative
