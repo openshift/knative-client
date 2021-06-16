@@ -5,6 +5,7 @@ go 1.15
 require (
 	github.com/boson-project/func v0.15.2-0.20210615072636-a937c490b7e1
 	github.com/google/go-cmp v0.5.5
+	github.com/maximilien/kn-source-pkg v0.6.3
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/spf13/cobra v1.1.3
 	github.com/spf13/pflag v1.0.5
