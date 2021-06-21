@@ -9,11 +9,21 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/boson-project/func/utils"
 	"gopkg.in/yaml.v2"
+	"k8s.io/apimachinery/pkg/api/resource"
 )
 
 // ConfigFile is the name of the config's serialized form.
 const ConfigFile = "func.yaml"
+
+var (
+	regWholeSecret      = regexp.MustCompile(`^{{\s*secret:((?:\w|['-]\w)+)\s*}}$`)
+	regKeyFromSecret    = regexp.MustCompile(`^{{\s*secret:((?:\w|['-]\w)+):(\w+)\s*}}$`)
+	regWholeConfigMap   = regexp.MustCompile(`^{{\s*configMap:((?:\w|['-]\w)+)\s*}}$`)
+	regKeyFromConfigMap = regexp.MustCompile(`^{{\s*configMap:((?:\w|['-]\w)+):(\w+)\s*}}$`)
+	regLocalEnv         = regexp.MustCompile(`^{{\s*env:(\w+)\s*}}$`)
+)
 
 type Volumes []Volume
 type Volume struct {
@@ -22,14 +32,54 @@ type Volume struct {
 	Path      *string `yaml:"path"`
 }
 
+func (v Volume) String() string {
+	if v.ConfigMap != nil {
+		return fmt.Sprintf("ConfigMap \"%s\" mounted at path: \"%s\"", *v.ConfigMap, *v.Path)
+	} else if v.Secret != nil {
+		return fmt.Sprintf("Secret \"%s\" mounted at path: \"%s\"", *v.Secret, *v.Path)
+	}
+
+	return ""
+}
+
 type Envs []Env
 type Env struct {
 	Name  *string `yaml:"name,omitempty"`
 	Value *string `yaml:"value"`
 }
 
+func (e Env) String() string {
+	if e.Name == nil && e.Value != nil {
+		match := regWholeSecret.FindStringSubmatch(*e.Value)
+		if len(match) == 2 {
+			return fmt.Sprintf("All key=value pairs from Secret \"%s\"", match[1])
+		}
+		match = regWholeConfigMap.FindStringSubmatch(*e.Value)
+		if len(match) == 2 {
+			return fmt.Sprintf("All key=value pairs from ConfigMap \"%s\"", match[1])
+		}
+	} else if e.Name != nil && e.Value != nil {
+		match := regKeyFromSecret.FindStringSubmatch(*e.Value)
+		if len(match) == 3 {
+			return fmt.Sprintf("Env \"%s\" with value set from key \"%s\" from Secret \"%s\"", *e.Name, match[2], match[1])
+		}
+		match = regKeyFromConfigMap.FindStringSubmatch(*e.Value)
+		if len(match) == 3 {
+			return fmt.Sprintf("Env \"%s\" with value set from key \"%s\" from ConfigMap \"%s\"", *e.Name, match[2], match[1])
+		}
+		match = regLocalEnv.FindStringSubmatch(*e.Value)
+		if len(match) == 2 {
+			return fmt.Sprintf("Env \"%s\" with value set from local env variable \"%s\"", *e.Name, match[1])
+		}
+
+		return fmt.Sprintf("Env \"%s\" with value \"%s\"", *e.Name, *e.Value)
+	}
+	return ""
+}
+
 type Options struct {
-	Scale *ScaleOptions `yaml:"scale,omitempty"`
+	Scale     *ScaleOptions     `yaml:"scale,omitempty"`
+	Resources *ResourcesOptions `yaml:"resources,omitempty"`
 }
 
 type ScaleOptions struct {
@@ -38,6 +88,22 @@ type ScaleOptions struct {
 	Metric      *string  `yaml:"metric,omitempty"`
 	Target      *float64 `yaml:"target,omitempty"`
 	Utilization *float64 `yaml:"utilization,omitempty"`
+}
+
+type ResourcesOptions struct {
+	Requests *ResourcesRequestsOptions `yaml:"requests,omitempty"`
+	Limits   *ResourcesLimitsOptions   `yaml:"limits,omitempty"`
+}
+
+type ResourcesLimitsOptions struct {
+	CPU         *string `yaml:"cpu,omitempty"`
+	Memory      *string `yaml:"memory,omitempty"`
+	Concurrency *int64  `yaml:"concurrency,omitempty"`
+}
+
+type ResourcesRequestsOptions struct {
+	CPU    *string `yaml:"cpu,omitempty"`
+	Memory *string `yaml:"memory,omitempty"`
 }
 
 // Config represents the serialized state of a Function's metadata.
@@ -223,21 +289,14 @@ func validateVolumes(volumes Volumes) (errors []string) {
 // - name: EXAMPLE1                					# ENV directly from a value
 //   value: value1
 // - name: EXAMPLE2                 				# ENV from the local ENV var
-//   value: {{ env.MY_ENV }}
+//   value: {{ env:MY_ENV }}
 // - name: EXAMPLE3
-//   value: {{ secret.secretName.key }}   			# ENV from a key in secret
-// - value: {{ secret.secretName }}          		# all key-pair values from secret are set as ENV
+//   value: {{ secret:secretName:key }}   			# ENV from a key in secret
+// - value: {{ secret:secretName }}          		# all key-pair values from secret are set as ENV
 // - name: EXAMPLE4
-//   value: {{ configMap.configMapName.key }}   	# ENV from a key in configMap
-// - value: {{ configMap.configMapName }}          	# all key-pair values from configMap are set as ENV
+//   value: {{ configMap:configMapName:key }}   	# ENV from a key in configMap
+// - value: {{ configMap:configMapName }}          	# all key-pair values from configMap are set as ENV
 func ValidateEnvs(envs Envs) (errors []string) {
-
-	// there could be '-' char in the secret/configMap name, but not in the key
-	regWholeSecret := regexp.MustCompile(`^{{\s*secret\.(?:\w|['-]\w)+\s*}}$`)
-	regKeyFromSecret := regexp.MustCompile(`^{{\s*secret\.(?:\w|['-]\w)+\.\w+\s*}}$`)
-	regWholeConfigMap := regexp.MustCompile(`^{{\s*configMap\.(?:\w|['-]\w)+\s*}}$`)
-	regKeyFromConfigMap := regexp.MustCompile(`^{{\s*configMap\.(?:\w|['-]\w)+\.\w+\s*}}$`)
-	regLocalEnv := regexp.MustCompile(`^{{\s*env\.(\w+)\s*}}$`)
 
 	for i, env := range envs {
 		if env.Name == nil && env.Value == nil {
@@ -245,20 +304,25 @@ func ValidateEnvs(envs Envs) (errors []string) {
 		} else if env.Value == nil {
 			errors = append(errors, fmt.Sprintf("env entry #%d is missing value field, only name '%s' is set", i, *env.Name))
 		} else if env.Name == nil {
-			// all key-pair values from secret are set as ENV; {{ secret.secretName }} or {{ configMap.configMapName }}
+			// all key-pair values from secret are set as ENV; {{ secret:secretName }} or {{ configMap:configMapName }}
 			if !regWholeSecret.MatchString(*env.Value) && !regWholeConfigMap.MatchString(*env.Value) {
-				errors = append(errors, fmt.Sprintf("env entry #%d has invalid value field set, it has '%s', but allowed is only '{{ secret.secretName }}' or '{{ configMap.configMapName }}'",
+				errors = append(errors, fmt.Sprintf("env entry #%d has invalid value field set, it has '%s', but allowed is only '{{ secret:secretName }}' or '{{ configMap:configMapName }}'",
 					i, *env.Value))
 			}
 		} else {
+
+			if err := utils.ValidateEnvVarName(*env.Name); err != nil {
+				errors = append(errors, fmt.Sprintf("env entry #%d has invalid name set: %q; %s", i, *env.Name, err.Error()))
+			}
+
 			if strings.HasPrefix(*env.Value, "{{") {
-				// ENV from the local ENV var; {{ env.MY_ENV }}
+				// ENV from the local ENV var; {{ env:MY_ENV }}
 				// or
-				// ENV from a key in secret/configMap;  {{ secret.secretName.key }} or {{ configMap.configMapName.key }}
+				// ENV from a key in secret/configMap;  {{ secret:secretName:key }} or {{ configMap:configMapName:key }}
 				if !regLocalEnv.MatchString(*env.Value) && !regKeyFromSecret.MatchString(*env.Value) && !regKeyFromConfigMap.MatchString(*env.Value) {
 					errors = append(errors,
 						fmt.Sprintf(
-							"env entry #%d with name '%s' has invalid value field set, it has '%s', but allowed is only '{{ env.MY_ENV }}', '{{ secret.secretName.key }}' or '{{ configMap.configMapName.key }}'",
+							"env entry #%d with name '%s' has invalid value field set, it has '%s', but allowed is only '{{ env:MY_ENV }}', '{{ secret:secretName:key }}' or '{{ configMap:configMapName:key }}'",
 							i, *env.Name, *env.Value))
 				}
 			}
@@ -313,6 +377,57 @@ func validateOptions(options Options) (errors []string) {
 				errors = append(errors,
 					fmt.Sprintf("options field \"scale.utilization\" has value set to \"%f\", but it must not be less than 1 or greater than 100",
 						*options.Scale.Utilization))
+			}
+		}
+	}
+
+	// options.resource
+	if options.Resources != nil {
+
+		// options.resource.requests
+		if options.Resources.Requests != nil {
+
+			if options.Resources.Requests.CPU != nil {
+				_, err := resource.ParseQuantity(*options.Resources.Requests.CPU)
+				if err != nil {
+					errors = append(errors, fmt.Sprintf("options field \"resources.requests.cpu\" has invalid value set: \"%s\"; \"%s\"",
+						*options.Resources.Requests.CPU, err.Error()))
+				}
+			}
+
+			if options.Resources.Requests.Memory != nil {
+				_, err := resource.ParseQuantity(*options.Resources.Requests.Memory)
+				if err != nil {
+					errors = append(errors, fmt.Sprintf("options field \"resources.requests.memory\" has invalid value set: \"%s\"; \"%s\"",
+						*options.Resources.Requests.Memory, err.Error()))
+				}
+			}
+		}
+
+		// options.resource.limits
+		if options.Resources.Limits != nil {
+
+			if options.Resources.Limits.CPU != nil {
+				_, err := resource.ParseQuantity(*options.Resources.Limits.CPU)
+				if err != nil {
+					errors = append(errors, fmt.Sprintf("options field \"resources.limits.cpu\" has invalid value set: \"%s\"; \"%s\"",
+						*options.Resources.Limits.CPU, err.Error()))
+				}
+			}
+
+			if options.Resources.Limits.Memory != nil {
+				_, err := resource.ParseQuantity(*options.Resources.Limits.Memory)
+				if err != nil {
+					errors = append(errors, fmt.Sprintf("options field \"resources.limits.memory\" has invalid value set: \"%s\"; \"%s\"",
+						*options.Resources.Limits.Memory, err.Error()))
+				}
+			}
+
+			if options.Resources.Limits.Concurrency != nil {
+				if *options.Resources.Limits.Concurrency < 0 {
+					errors = append(errors, fmt.Sprintf("options field \"resources.limits.concurrency\" has value set to \"%d\", but it must not be less than 0",
+						*options.Resources.Limits.Concurrency))
+				}
 			}
 		}
 	}

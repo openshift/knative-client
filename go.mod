@@ -3,7 +3,8 @@ module knative.dev/client
 go 1.15
 
 require (
-	github.com/boson-project/func v0.15.2-0.20210615072636-a937c490b7e1
+	github.com/boson-project/func v0.16.0
+	github.com/gobuffalo/here v0.6.2 // indirect
 	github.com/google/go-cmp v0.5.5
 	github.com/maximilien/kn-source-pkg v0.6.3
 	github.com/mitchellh/go-homedir v1.1.0
@@ -13,7 +14,7 @@ require (
 	golang.org/x/term v0.0.0-20201210144234-2321bbc49cbf
 	gotest.tools/v3 v3.0.3
 	k8s.io/api v0.19.7
-	k8s.io/apimachinery v0.19.7
+	k8s.io/apimachinery v0.21.2
 	k8s.io/cli-runtime v0.19.7
 	k8s.io/client-go v0.19.7
 	k8s.io/code-generator v0.20.1
@@ -26,7 +27,11 @@ require (
 	sigs.k8s.io/yaml v1.2.0
 )
 
+//TODO: Remove when v0.16.0 is available
+replace github.com/boson-project/func => github.com/boson-project/func v0.15.2-0.20210621063850-12c5cda8e215
+
 replace (
 	github.com/go-openapi/spec => github.com/go-openapi/spec v0.19.3
+	k8s.io/apimachinery => k8s.io/apimachinery v0.19.7
 	k8s.io/code-generator => k8s.io/code-generator v0.19.7
 )

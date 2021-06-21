@@ -10,6 +10,7 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"knative.dev/client/pkg/kn/flags"
@@ -20,6 +21,7 @@ import (
 	v1 "knative.dev/serving/pkg/apis/serving/v1"
 
 	fn "github.com/boson-project/func"
+	"github.com/boson-project/func/k8s"
 )
 
 type Deployer struct {
@@ -32,7 +34,7 @@ type Deployer struct {
 
 func NewDeployer(namespaceOverride string) (deployer *Deployer, err error) {
 	deployer = &Deployer{}
-	namespace, err := GetNamespace(namespaceOverride)
+	namespace, err := k8s.GetNamespace(namespaceOverride)
 	if err != nil {
 		return
 	}
@@ -244,13 +246,13 @@ func updateService(image string, newEnv []corev1.EnvVar, newEnvFrom []corev1.Env
 //   - name: EXAMPLE1                            # ENV directly from a value
 //     value: value1
 //   - name: EXAMPLE2                            # ENV from the local ENV var
-//     value: {{ env.MY_ENV }}
+//     value: {{ env:MY_ENV }}
 //   - name: EXAMPLE3
-//     value: {{ secret.example-secret.key }}    # ENV from a key in Secret
-//   - value: {{ secret.example-secret }}        # all ENVs from Secret
+//     value: {{ secret:example-secret:key }}    # ENV from a key in Secret
+//   - value: {{ secret:example-secret }}        # all ENVs from Secret
 //   - name: EXAMPLE4
-//     value: {{ configMap.configMapName.key }}  # ENV from a key in ConfigMap
-//   - value: {{ configMap.configMapName }}      # all key-pair values from ConfigMap are set as ENV
+//     value: {{ configMap:configMapName:key }}  # ENV from a key in ConfigMap
+//   - value: {{ configMap:configMapName }}      # all key-pair values from ConfigMap are set as ENV
 func processEnvs(envs fn.Envs, referencedSecrets, referencedConfigMaps *sets.String) ([]corev1.EnvVar, []corev1.EnvFromSource, error) {
 
 	envVars := []corev1.EnvVar{{Name: "BUILT", Value: time.Now().Format("20060102T150405")}}
@@ -258,7 +260,7 @@ func processEnvs(envs fn.Envs, referencedSecrets, referencedConfigMaps *sets.Str
 
 	for _, env := range envs {
 		if env.Name == nil && env.Value != nil {
-			// all key-pair values from secret/configMap are set as ENV, eg. {{ secret.secretName }} or {{ configMap.configMapName }}
+			// all key-pair values from secret/configMap are set as ENV, eg. {{ secret:secretName }} or {{ configMap:configMapName }}
 			if strings.HasPrefix(*env.Value, "{{") {
 				envFromSource, err := createEnvFromSource(*env.Value, referencedSecrets, referencedConfigMaps)
 				if err != nil {
@@ -269,9 +271,9 @@ func processEnvs(envs fn.Envs, referencedSecrets, referencedConfigMaps *sets.Str
 			}
 		} else if env.Name != nil && env.Value != nil {
 			if strings.HasPrefix(*env.Value, "{{") {
-				slices := strings.Split(strings.Trim(*env.Value, "{} "), ".")
+				slices := strings.Split(strings.Trim(*env.Value, "{} "), ":")
 				if len(slices) == 3 {
-					// ENV from a key in secret/configMap, eg. FOO={{ secret.secretName.key }} FOO={{ configMap.configMapName.key }}
+					// ENV from a key in secret/configMap, eg. FOO={{ secret:secretName:key }} FOO={{ configMap:configMapName.key }}
 					valueFrom, err := createEnvVarSource(slices, referencedSecrets, referencedConfigMaps)
 					envVars = append(envVars, corev1.EnvVar{Name: *env.Name, ValueFrom: valueFrom})
 					if err != nil {
@@ -279,7 +281,7 @@ func processEnvs(envs fn.Envs, referencedSecrets, referencedConfigMaps *sets.Str
 					}
 					continue
 				} else if len(slices) == 2 {
-					// ENV from the local ENV var, eg. FOO={{ env.LOCAL_ENV }}
+					// ENV from the local ENV var, eg. FOO={{ env:LOCAL_ENV }}
 					localValue, err := processLocalEnvValue(*env.Value)
 					if err != nil {
 						return nil, nil, err
@@ -300,9 +302,9 @@ func processEnvs(envs fn.Envs, referencedSecrets, referencedConfigMaps *sets.Str
 }
 
 func createEnvFromSource(value string, referencedSecrets, referencedConfigMaps *sets.String) (*corev1.EnvFromSource, error) {
-	slices := strings.Split(strings.Trim(value, "{} "), ".")
+	slices := strings.Split(strings.Trim(value, "{} "), ":")
 	if len(slices) != 2 {
-		return nil, fmt.Errorf("env requires a value in form \"resourceType.name\" where \"resourceType\" can be one of \"configMap\" or \"secret\"; got %q", slices)
+		return nil, fmt.Errorf("env requires a value in form \"resourceType:name\" where \"resourceType\" can be one of \"configMap\" or \"secret\"; got %q", slices)
 	}
 
 	envVarSource := corev1.EnvFromSource{}
@@ -333,7 +335,7 @@ func createEnvFromSource(value string, referencedSecrets, referencedConfigMaps *
 			referencedSecrets.Insert(sourceName)
 		}
 	default:
-		return nil, fmt.Errorf("unsupported env source type \"%q\"; supported source types are \"configMap\" or \"secret\"", slices[0])
+		return nil, fmt.Errorf("unsupported env source type %q; supported source types are \"configMap\" or \"secret\"", slices[0])
 	}
 
 	if len(sourceName) == 0 {
@@ -346,7 +348,7 @@ func createEnvFromSource(value string, referencedSecrets, referencedConfigMaps *
 func createEnvVarSource(slices []string, referencedSecrets, referencedConfigMaps *sets.String) (*corev1.EnvVarSource, error) {
 
 	if len(slices) != 3 {
-		return nil, fmt.Errorf("env requires a value in form \"resourceType.name.key\" where \"resourceType\" can be one of \"configMap\" or \"secret\"; got %q", slices)
+		return nil, fmt.Errorf("env requires a value in form \"resourceType:name:key\" where \"resourceType\" can be one of \"configMap\" or \"secret\"; got %q", slices)
 	}
 
 	envVarSource := corev1.EnvVarSource{}
@@ -381,7 +383,7 @@ func createEnvVarSource(slices []string, referencedSecrets, referencedConfigMaps
 			referencedSecrets.Insert(sourceName)
 		}
 	default:
-		return nil, fmt.Errorf("unsupported env source type \"%q\"; supported source types are \"configMap\" or \"secret\"", slices[0])
+		return nil, fmt.Errorf("unsupported env source type %q; supported source types are \"configMap\" or \"secret\"", slices[0])
 	}
 
 	if len(sourceName) == 0 {
@@ -389,13 +391,13 @@ func createEnvVarSource(slices []string, referencedSecrets, referencedConfigMaps
 	}
 
 	if len(sourceKey) == 0 {
-		return nil, fmt.Errorf("the key referenced by resource %s \"%s\" cannot be an empty string", sourceType, sourceName)
+		return nil, fmt.Errorf("the key referenced by resource %s %q cannot be an empty string", sourceType, sourceName)
 	}
 
 	return &envVarSource, nil
 }
 
-var evRegex = regexp.MustCompile(`^{{\s*(\w+)\s*.(\w+)\s*}}$`)
+var evRegex = regexp.MustCompile(`^{{\s*(\w+)\s*:(\w+)\s*}}$`)
 
 const (
 	ctxIdx = 1
@@ -406,12 +408,12 @@ func processLocalEnvValue(val string) (string, error) {
 	match := evRegex.FindStringSubmatch(val)
 	if len(match) > valIdx {
 		if match[ctxIdx] != "env" {
-			return "", fmt.Errorf("allowed env value entry is \"{{ env.LOCAL_VALUE }}\"1; got: %q", match[ctxIdx])
+			return "", fmt.Errorf("allowed env value entry is \"{{ env:LOCAL_VALUE }}\"; got: %q", match[ctxIdx])
 		}
 		if v, ok := os.LookupEnv(match[valIdx]); ok {
 			return v, nil
 		} else {
-			return "", fmt.Errorf("required local environment variable \"%q\" is not set", match[valIdx])
+			return "", fmt.Errorf("required local environment variable %q is not set", match[valIdx])
 		}
 	} else {
 		return val, nil
@@ -495,21 +497,17 @@ func processVolumes(volumes fn.Volumes, referencedSecrets, referencedConfigMaps 
 // checkSecretsConfigMapsArePresent returns error if Secrets or ConfigMaps
 // referenced in input sets are not deployed on the cluster in the specified namespace
 func checkSecretsConfigMapsArePresent(ctx context.Context, namespace string, referencedSecrets, referencedConfigMaps *sets.String) error {
-	client, err := NewKubernetesClientset(namespace)
-	if err != nil {
-		return err
-	}
 
 	errMsg := ""
 	for s := range *referencedSecrets {
-		_, err := client.CoreV1().Secrets(namespace).Get(ctx, s, metav1.GetOptions{})
+		_, err := k8s.GetSecret(ctx, s, namespace)
 		if err != nil {
 			errMsg += fmt.Sprintf("  referenced Secret \"%s\" is not present in namespace \"%s\"\n", s, namespace)
 		}
 	}
 
 	for cm := range *referencedConfigMaps {
-		_, err := client.CoreV1().ConfigMaps(namespace).Get(ctx, cm, metav1.GetOptions{})
+		_, err := k8s.GetConfigMap(ctx, cm, namespace)
 		if err != nil {
 			errMsg += fmt.Sprintf("  referenced ConfigMap \"%s\" is not present in namespace \"%s\"\n", cm, namespace)
 		}
@@ -558,6 +556,58 @@ func setServiceOptions(template *servingv1.RevisionTemplateSpec, options fn.Opti
 			toUpdate[autoscaling.TargetUtilizationPercentageKey] = fmt.Sprintf("%f", *options.Scale.Utilization)
 		} else {
 			toRemove = append(toRemove, autoscaling.TargetUtilizationPercentageKey)
+		}
+
+	}
+
+	// in the container always set Requests/Limits & Concurrency values based on the contents of config
+	template.Spec.PodSpec.Containers[0].Resources.Requests = nil
+	template.Spec.PodSpec.Containers[0].Resources.Limits = nil
+	template.Spec.ContainerConcurrency = nil
+
+	if options.Resources != nil {
+		if options.Resources.Requests != nil {
+			template.Spec.PodSpec.Containers[0].Resources.Requests = corev1.ResourceList{}
+
+			if options.Resources.Requests.CPU != nil {
+				value, err := resource.ParseQuantity(*options.Resources.Requests.CPU)
+				if err != nil {
+					return err
+				}
+				template.Spec.PodSpec.Containers[0].Resources.Requests[corev1.ResourceCPU] = value
+			}
+
+			if options.Resources.Requests.Memory != nil {
+				value, err := resource.ParseQuantity(*options.Resources.Requests.Memory)
+				if err != nil {
+					return err
+				}
+				template.Spec.PodSpec.Containers[0].Resources.Requests[corev1.ResourceMemory] = value
+			}
+		}
+
+		if options.Resources.Limits != nil {
+			template.Spec.PodSpec.Containers[0].Resources.Limits = corev1.ResourceList{}
+
+			if options.Resources.Limits.CPU != nil {
+				value, err := resource.ParseQuantity(*options.Resources.Limits.CPU)
+				if err != nil {
+					return err
+				}
+				template.Spec.PodSpec.Containers[0].Resources.Limits[corev1.ResourceCPU] = value
+			}
+
+			if options.Resources.Limits.Memory != nil {
+				value, err := resource.ParseQuantity(*options.Resources.Limits.Memory)
+				if err != nil {
+					return err
+				}
+				template.Spec.PodSpec.Containers[0].Resources.Limits[corev1.ResourceMemory] = value
+			}
+
+			if options.Resources.Limits.Concurrency != nil {
+				template.Spec.ContainerConcurrency = options.Resources.Limits.Concurrency
+			}
 		}
 	}
 

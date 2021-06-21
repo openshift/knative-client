@@ -12,6 +12,10 @@ contrib.go.opencensus.io/exporter/stackdriver
 contrib.go.opencensus.io/exporter/stackdriver/monitoredresource
 contrib.go.opencensus.io/exporter/stackdriver/monitoredresource/aws
 contrib.go.opencensus.io/exporter/stackdriver/monitoredresource/gcp
+# github.com/AlecAivazis/survey/v2 v2.2.12
+github.com/AlecAivazis/survey/v2
+github.com/AlecAivazis/survey/v2/core
+github.com/AlecAivazis/survey/v2/terminal
 # github.com/Azure/go-ansiterm v0.0.0-20170929234023-d6e3b3328b78
 github.com/Azure/go-ansiterm
 github.com/Azure/go-ansiterm/winterm
@@ -80,17 +84,17 @@ github.com/aws/aws-sdk-go/service/sts/stsiface
 github.com/beorn7/perks/quantile
 # github.com/blendle/zapdriver v1.3.1
 github.com/blendle/zapdriver
-# github.com/boson-project/func v0.15.2-0.20210615072636-a937c490b7e1
+# github.com/boson-project/func v0.16.0 => github.com/boson-project/func v0.15.2-0.20210621063850-12c5cda8e215
 ## explicit
 github.com/boson-project/func
 github.com/boson-project/func/buildpacks
 github.com/boson-project/func/cloudevents
 github.com/boson-project/func/cmd
 github.com/boson-project/func/docker
+github.com/boson-project/func/k8s
 github.com/boson-project/func/knative
 github.com/boson-project/func/plugin
 github.com/boson-project/func/progress
-github.com/boson-project/func/prompt
 github.com/boson-project/func/utils
 # github.com/buildpacks/imgutil v0.0.0-20210209163614-30601e371ce3
 github.com/buildpacks/imgutil
@@ -261,7 +265,8 @@ github.com/go-openapi/jsonreference
 github.com/go-openapi/spec
 # github.com/go-openapi/swag v0.19.7
 github.com/go-openapi/swag
-# github.com/gobuffalo/here v0.6.0
+# github.com/gobuffalo/here v0.6.2
+## explicit
 github.com/gobuffalo/here
 # github.com/gogo/protobuf v1.3.2
 github.com/gogo/protobuf/proto
@@ -355,6 +360,8 @@ github.com/jbenet/go-context/io
 github.com/jmespath/go-jmespath
 # github.com/json-iterator/go v1.1.10
 github.com/json-iterator/go
+# github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
+github.com/kballard/go-shellquote
 # github.com/kelseyhightower/envconfig v1.4.0
 github.com/kelseyhightower/envconfig
 # github.com/kevinburke/ssh_config v0.0.0-20190725054713-01f96b0aa0cd
@@ -393,6 +400,8 @@ github.com/maximilien/kn-source-pkg/pkg/factories
 github.com/maximilien/kn-source-pkg/pkg/types
 github.com/maximilien/kn-source-pkg/pkg/types/typesfakes
 github.com/maximilien/kn-source-pkg/test/e2e
+# github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b
+github.com/mgutz/ansi
 # github.com/mitchellh/go-homedir v1.1.0
 ## explicit
 github.com/mitchellh/go-homedir
@@ -863,7 +872,7 @@ k8s.io/api/settings/v1alpha1
 k8s.io/api/storage/v1
 k8s.io/api/storage/v1alpha1
 k8s.io/api/storage/v1beta1
-# k8s.io/apimachinery v0.19.7
+# k8s.io/apimachinery v0.21.2 => k8s.io/apimachinery v0.19.7
 ## explicit
 k8s.io/apimachinery/pkg/api/apitesting/fuzzer
 k8s.io/apimachinery/pkg/api/equality
@@ -1231,5 +1240,7 @@ sigs.k8s.io/structured-merge-diff/v4/value
 # sigs.k8s.io/yaml v1.2.0
 ## explicit
 sigs.k8s.io/yaml
+# github.com/boson-project/func => github.com/boson-project/func v0.15.2-0.20210621063850-12c5cda8e215
 # github.com/go-openapi/spec => github.com/go-openapi/spec v0.19.3
+# k8s.io/apimachinery => k8s.io/apimachinery v0.19.7
 # k8s.io/code-generator => k8s.io/code-generator v0.19.7
