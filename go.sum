@@ -189,8 +189,8 @@ github.com/blang/semver/v4 v4.0.0/go.mod h1:IbckMUScFkM3pff0VJDNKRiT6TG/YpiHIM2y
 github.com/blendle/zapdriver v1.3.1 h1:C3dydBOWYRiOk+B8X9IVZ5IOe+7cl+tGOexN4QqHfpE=
 github.com/blendle/zapdriver v1.3.1/go.mod h1:mdXfREi6u5MArG4j9fewC+FGnXaBR+T4Ox4J2u4eHCc=
 github.com/bmizerany/perks v0.0.0-20141205001514-d9a9656a3a4b/go.mod h1:ac9efd0D1fsDb3EJvhqgXRbFx7bs2wqZ10HQPeU8U/Q=
-github.com/boson-project/func v0.15.2-0.20210621063850-12c5cda8e215 h1:zeWl78kcv4woQ5knTadRKr5gA2ag2Zliz59QI1LVwus=
-github.com/boson-project/func v0.15.2-0.20210621063850-12c5cda8e215/go.mod h1:T7805XYEVrCSKkfqHjkARLxnF74ygtS0kYk2O3V9ghw=
+github.com/boson-project/func v0.16.0 h1:PngO/gxOHMPABVVa5c/Mm+4or6UyuxVS0xcinc5Vwpk=
+github.com/boson-project/func v0.16.0/go.mod h1:dM7mwCtv4gUerBr4v9SfKHbvKnj5u2htXcKLbOcxkVQ=
 github.com/buildpacks/imgutil v0.0.0-20201211223552-8581300fe2b2/go.mod h1:NC93OGDehA2ksqgTzugeQcPqmTpilMPYRO+XaFsDyts=
 github.com/buildpacks/imgutil v0.0.0-20210209163614-30601e371ce3 h1:NuBOSLnHIE+gTjeRC/PAopad83eNT1YLRclBSIRYhKU=
 github.com/buildpacks/imgutil v0.0.0-20210209163614-30601e371ce3/go.mod h1:JiWXkmkaiXrr5nq77JUtu7ys/5OAznS4VI7TwKthP7s=

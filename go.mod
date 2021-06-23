@@ -27,9 +27,6 @@ require (
 	sigs.k8s.io/yaml v1.2.0
 )
 
-//TODO: Remove when v0.16.0 is available
-replace github.com/boson-project/func => github.com/boson-project/func v0.15.2-0.20210621063850-12c5cda8e215
-
 replace (
 	github.com/go-openapi/spec => github.com/go-openapi/spec v0.19.3
 	k8s.io/apimachinery => k8s.io/apimachinery v0.19.7

@@ -13,7 +13,7 @@ import (
 	"github.com/spf13/cobra"
 	"knative.dev/client/pkg/util"
 
-	bosonFunc "github.com/boson-project/func"
+	fn "github.com/boson-project/func"
 	"github.com/boson-project/func/buildpacks"
 	"github.com/boson-project/func/docker"
 	"github.com/boson-project/func/knative"
@@ -154,13 +154,13 @@ func runDeploy(cmd *cobra.Command, _ []string) (err error) {
 		listener.Done()
 	}()
 
-	client := bosonFunc.New(
-		bosonFunc.WithVerbose(config.Verbose),
-		bosonFunc.WithRegistry(config.Registry), // for deriving image name when --image not provided explicitly.
-		bosonFunc.WithBuilder(builder),
-		bosonFunc.WithPusher(pusher),
-		bosonFunc.WithDeployer(deployer),
-		bosonFunc.WithProgressListener(listener))
+	client := fn.New(
+		fn.WithVerbose(config.Verbose),
+		fn.WithRegistry(config.Registry), // for deriving image name when --image not provided explicitly.
+		fn.WithBuilder(builder),
+		fn.WithPusher(pusher),
+		fn.WithDeployer(deployer),
+		fn.WithProgressListener(listener))
 
 	if config.Build {
 		if err := client.Build(context, config.Path); err != nil {
@@ -187,6 +187,12 @@ func credentialsProvider(ctx context.Context, registry string) (docker.Credentia
 		return result, nil
 	}
 
+	credentials, _ = docker.GetCredentialsFromCredsStore(registry)
+	if credentials != (containersTypes.DockerAuthConfig{}) {
+		result.Username, result.Password = credentials.Username, credentials.Password
+		return result, nil
+	}
+
 	fmt.Println("Please provide credentials for image registry.")
 	var qs = []*survey.Question{
 		{
@@ -197,7 +203,7 @@ func credentialsProvider(ctx context.Context, registry string) (docker.Credentia
 			Validate: survey.Required,
 		},
 		{
-			Name: "namespace",
+			Name: "password",
 			Prompt: &survey.Password{
 				Message: "Password:",
 			},

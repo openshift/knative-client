@@ -84,7 +84,7 @@ github.com/aws/aws-sdk-go/service/sts/stsiface
 github.com/beorn7/perks/quantile
 # github.com/blendle/zapdriver v1.3.1
 github.com/blendle/zapdriver
-# github.com/boson-project/func v0.16.0 => github.com/boson-project/func v0.15.2-0.20210621063850-12c5cda8e215
+# github.com/boson-project/func v0.16.0
 ## explicit
 github.com/boson-project/func
 github.com/boson-project/func/buildpacks
@@ -1240,7 +1240,6 @@ sigs.k8s.io/structured-merge-diff/v4/value
 # sigs.k8s.io/yaml v1.2.0
 ## explicit
 sigs.k8s.io/yaml
-# github.com/boson-project/func => github.com/boson-project/func v0.15.2-0.20210621063850-12c5cda8e215
 # github.com/go-openapi/spec => github.com/go-openapi/spec v0.19.3
 # k8s.io/apimachinery => k8s.io/apimachinery v0.19.7
 # k8s.io/code-generator => k8s.io/code-generator v0.19.7
