@@ -12,8 +12,7 @@ failed=0
 # Run unit tests
  (( !failed )) && run_unit_tests || failed=1
 # Serverless operator setup & tests
-# TODO: change branch to "release-1.16" when available
-(( !failed )) && install_serverless_operator_branch "main" || failed=1
+(( !failed )) && install_serverless_operator_branch "release-1.16" || failed=1
 (( !failed )) && run_client_e2e_tests serving || failed=1
 (( !failed )) && run_client_e2e_tests eventing || failed=1
 
